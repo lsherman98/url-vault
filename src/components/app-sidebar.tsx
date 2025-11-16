@@ -52,7 +52,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = pb.authStore.model;
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader></SidebarHeader>
+      <SidebarHeader>
+        <Link to="/" className="text-lg font-bold">
+          URL Vault
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
         {pinnedGroups.length > 0 && (

@@ -255,6 +255,25 @@ function LoginForm() {
       <div className="flex justify-center items-center flex-1">
         <Card className="w-full max-w-sm">
           <CardHeader>
+            <Link
+              to="/"
+              className="flex items-center gap-2 mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              <span>Back to Url Vault</span>
+            </Link>
             <CardTitle className="text-2xl">Login</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">

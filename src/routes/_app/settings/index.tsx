@@ -29,7 +29,6 @@ function SettingsPage() {
     try {
       await deleteAccount.mutateAsync();
       pb.authStore.clear();
-      toast.success("Account deleted successfully");
       navigate({ to: "/signin" });
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -43,7 +42,6 @@ function SettingsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
-
       <div className="space-y-6">
         <Card className="border-destructive">
           <CardHeader>

@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
-	"github.com/lsherman98/bookmarks/pocketbase/pb_hooks/api"
+	"github.com/lsherman98/url-vault/pocketbase/pb_hooks/api"
 
-	// _ "github.com/lsherman98/bookmarks/pocketbase/migrations"
+	_ "github.com/lsherman98/url-vault/pocketbase/migrations"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"

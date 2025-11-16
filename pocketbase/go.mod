@@ -1,4 +1,4 @@
-module github.com/lsherman98/bookmarks/pocketbase
+module github.com/lsherman98/url-vault/pocketbase
 
 go 1.25.0
 
