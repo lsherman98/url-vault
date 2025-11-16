@@ -39,13 +39,11 @@ export const Route = createFileRoute("/_app/bookmarks/")({
 });
 
 function RouteComponent() {
-  // Filter states
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [filterStarred, setFilterStarred] = useState(false);
   const [filterOpenSource, setFilterOpenSource] = useState(false);
 
-  // UI states
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [tagOpen, setTagOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<BookmarksResponse | null>(null);
@@ -55,18 +53,16 @@ function RouteComponent() {
   const [groupSearch, setGroupSearch] = useState("");
   const [groupPopoverOpen, setGroupPopoverOpen] = useState(false);
 
-  // Data fetching - pass filters to API
-  const { data: bookmarksData = [] } = useGetBookmarks(
+  const { data: bookmarksData } = useGetBookmarks(
     selectedCategories.length > 0 ? selectedCategories : undefined,
     selectedTags.length > 0 ? selectedTags : undefined,
     filterStarred || undefined,
     filterOpenSource || undefined
   );
-  const { data: categories = [] } = useGetCategories();
-  const { data: tags = [] } = useGetTags();
-  const { data: groups = [] } = useGetGroups();
+  const { data: categories } = useGetCategories();
+  const { data: tags } = useGetTags();
+  const { data: groups } = useGetGroups();
 
-  // Mutations
   const updateBookmark = useUpdateBookmark();
   const deleteBookmark = useDeleteBookmark();
   const createTag = useCreateTag();
@@ -79,7 +75,6 @@ function RouteComponent() {
         id: bookmark.id,
         data: { starred: !bookmark.starred },
       });
-      toast.success(bookmark.starred ? "Removed from starred" : "Added to starred");
     } catch (error) {
       toast.error("Failed to update bookmark");
       console.error(error);
@@ -99,17 +94,15 @@ function RouteComponent() {
     }
   };
 
-  const getCategoryName = (categoryId?: string) => {
-    if (!categoryId) return "Uncategorized";
-    const category = categories.find((c) => c.id === categoryId);
-    return category?.category || "Unknown";
+  const getCategoryName = (categoryId: string) => {
+    const category = categories?.find((c) => c.id === categoryId);
+    return category?.category;
   };
 
-  const getTagNames = (tagIds?: string[]) => {
-    if (!tagIds || tagIds.length === 0) return [];
+  const getTagNames = (tagIds: string[]) => {
     return tagIds
       .map((tagId) => {
-        const tag = tags.find((t) => t.id === tagId);
+        const tag = tags?.find((t) => t.id === tagId);
         return tag?.tag || null;
       })
       .filter(Boolean) as string[];
@@ -122,10 +115,10 @@ function RouteComponent() {
   };
 
   const handleToggleAllBookmarks = () => {
-    if (selectedBookmarks.length === bookmarksData.length) {
+    if (selectedBookmarks.length === bookmarksData?.length) {
       setSelectedBookmarks([]);
     } else {
-      setSelectedBookmarks(bookmarksData.map((b) => b.id));
+      setSelectedBookmarks(bookmarksData?.map((b) => b.id) || []);
     }
   };
 
@@ -135,7 +128,7 @@ function RouteComponent() {
       return;
     }
 
-    const group = groups.find((g) => g.id === groupId);
+    const group = groups?.find((g) => g.id === groupId);
     if (!group) return;
 
     const currentBookmarks = group.bookmarks || [];
@@ -186,10 +179,8 @@ function RouteComponent() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Bookmarks</h1>
-        <div className="text-sm text-muted-foreground">{bookmarksData.length} bookmarks</div>
+        <div className="text-sm text-muted-foreground">{bookmarksData?.length} bookmarks</div>
       </div>
-
-      {/* Filters */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -227,25 +218,23 @@ function RouteComponent() {
             </Button>
           </div>
         </div>
-
         <div className="flex flex-wrap gap-4 p-4 border rounded-lg bg-card">
-          {/* Category Filter */}
-          <div className="flex flex-col gap-2 min-w-[200px]">
+          <div className="flex flex-col gap-2">
             <Label className="font-medium">Categories</Label>
             <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="justify-between">
-                  {selectedCategories.length > 0 ? `${selectedCategories.length} selected` : "Select categories..."}
+                <Button variant="outline" className="justify-between w-[220px]">
+                  {selectedCategories.length > 0 ? `${selectedCategories.length} selected` : "Select"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
+              <PopoverContent className="p-0 w-[220px]">
                 <Command>
                   <CommandInput placeholder="Search categories..." />
                   <CommandList>
                     <CommandEmpty>No category found.</CommandEmpty>
                     <CommandGroup>
-                      {categories.map((category) => (
+                      {categories?.map((category) => (
                         <CommandItem
                           key={category.id}
                           value={category.category}
@@ -271,21 +260,7 @@ function RouteComponent() {
                 </Command>
               </PopoverContent>
             </Popover>
-            {selectedCategories.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {selectedCategories.map((catId) => {
-                  const cat = categories.find((c) => c.id === catId);
-                  return (
-                    <Badge key={catId} variant="secondary" className="text-xs">
-                      {cat?.category}
-                    </Badge>
-                  );
-                })}
-              </div>
-            )}
           </div>
-
-          {/* Tag Filter */}
           <div className="flex flex-col gap-2 min-w-[200px]">
             <Label className="font-medium">Tags</Label>
             <Popover open={tagOpen} onOpenChange={setTagOpen}>
@@ -301,7 +276,7 @@ function RouteComponent() {
                   <CommandList>
                     <CommandEmpty>No tag found.</CommandEmpty>
                     <CommandGroup>
-                      {tags.map((tag) => (
+                      {tags?.map((tag) => (
                         <CommandItem
                           key={tag.id}
                           value={tag.tag}
@@ -323,10 +298,7 @@ function RouteComponent() {
               </PopoverContent>
             </Popover>
           </div>
-
-          {/* Toggles Section */}
           <div className="flex gap-6">
-            {/* Starred Filter */}
             <div className="flex flex-col gap-2">
               <Label className="font-medium">Starred</Label>
               <div className="flex items-center h-10 space-x-2">
@@ -336,8 +308,6 @@ function RouteComponent() {
                 </Label>
               </div>
             </div>
-
-            {/* Open Source Filter */}
             <div className="flex flex-col gap-2">
               <Label className="font-medium">Open Source</Label>
               <div className="flex items-center h-10 space-x-2">
@@ -350,19 +320,19 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-
-      {/* Bookmarks Table */}
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px]">
+              <TableHead className="w-8">
                 <Checkbox
-                  checked={bookmarksData.length > 0 && selectedBookmarks.length === bookmarksData.length}
+                  checked={
+                    bookmarksData && bookmarksData.length > 0 && selectedBookmarks.length === bookmarksData.length
+                  }
                   onCheckedChange={handleToggleAllBookmarks}
                 />
               </TableHead>
-              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="w-8"></TableHead>
               <TableHead>URL</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Tags</TableHead>
@@ -371,14 +341,14 @@ function RouteComponent() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {bookmarksData.length === 0 ? (
+            {bookmarksData?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   No bookmarks found
                 </TableCell>
               </TableRow>
             ) : (
-              bookmarksData.map((bookmark) => (
+              bookmarksData?.map((bookmark) => (
                 <TableRow key={bookmark.id}>
                   <TableCell>
                     <Checkbox
@@ -467,12 +437,10 @@ function RouteComponent() {
           </TableBody>
         </Table>
       </div>
-
-      {/* Edit Dialog */}
       <EditBookmarkDialog
         bookmark={editingBookmark}
-        categories={categories}
-        tags={tags}
+        categories={categories || []}
+        tags={tags || []}
         onClose={() => setEditingBookmark(null)}
         onSave={async (data) => {
           if (!editingBookmark) return;
@@ -487,8 +455,6 @@ function RouteComponent() {
         }}
         createTag={createTag}
       />
-
-      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deletingBookmark} onOpenChange={() => setDeletingBookmark(null)}>
         <DialogContent>
           <DialogHeader>
@@ -513,8 +479,6 @@ function RouteComponent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Add to Group Dialog */}
       <Dialog open={addingToGroup} onOpenChange={setAddingToGroup}>
         <DialogContent>
           <DialogHeader>
@@ -541,14 +505,14 @@ function RouteComponent() {
                   />
                   <CommandList>
                     <CommandEmpty>No group found.</CommandEmpty>
-                    {groupSearch && !groups.find((g) => g.title?.toLowerCase() === groupSearch.toLowerCase()) && (
+                    {groupSearch && !groups?.find((g) => g.title?.toLowerCase() === groupSearch.toLowerCase()) && (
                       <CommandGroup>
                         <CommandItem onSelect={() => handleCreateGroupWithBookmarks(groupSearch)}>
                           Create "{groupSearch}"
                         </CommandItem>
                       </CommandGroup>
                     )}
-                    {groups.length > 0 && (
+                    {groups && groups.length > 0 && (
                       <CommandGroup>
                         {groups.map((group) => (
                           <CommandItem key={group.id} value={group.title} onSelect={() => handleAddToGroup(group.id)}>
@@ -576,7 +540,6 @@ function RouteComponent() {
   );
 }
 
-// Edit Bookmark Dialog Component
 interface EditBookmarkDialogProps {
   bookmark: BookmarksResponse | null;
   categories: CategoriesResponse[];
@@ -602,7 +565,6 @@ function EditBookmarkDialog({
   const [openSource, setOpenSource] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
 
-  // Update form when bookmark changes
   useEffect(() => {
     if (bookmark) {
       setUrl(bookmark.url || "");
@@ -611,7 +573,6 @@ function EditBookmarkDialog({
       setStarred(bookmark.starred || false);
       setOpenSource(bookmark.open_source || false);
 
-      // Convert tag IDs to Tag objects
       const tagObjects: Tag[] = (bookmark.tags || [])
         .map((tagId) => {
           const tag = allTags.find((t) => t.id === tagId);
@@ -623,7 +584,6 @@ function EditBookmarkDialog({
   }, [bookmark, allTags]);
 
   const handleSave = async () => {
-    // Handle new tags
     const tagIds: string[] = [];
     for (const tag of selectedTags) {
       const existingTag = allTags.find((t) => t.tag?.toLowerCase() === tag.text.toLowerCase());
@@ -664,7 +624,6 @@ function EditBookmarkDialog({
             <Label htmlFor="edit-url">URL</Label>
             <Input id="edit-url" value={url} onChange={(e) => setUrl(e.target.value)} />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="edit-description">Description</Label>
             <Textarea
@@ -674,7 +633,6 @@ function EditBookmarkDialog({
               rows={3}
             />
           </div>
-
           <div className="space-y-2">
             <Label>Category</Label>
             <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
@@ -709,16 +667,13 @@ function EditBookmarkDialog({
               </PopoverContent>
             </Popover>
           </div>
-
           <div className="space-y-2">
             <Label>Tags</Label>
             <TagsInput tags={selectedTags} onTagsChange={setSelectedTags} />
           </div>
-
           <div className="space-y-2">
             <Label>Options</Label>
             <div className="flex items-center gap-3">
-              {/* Starred Icon Button */}
               <Button
                 type="button"
                 variant={starred ? "default" : "outline"}
@@ -729,8 +684,6 @@ function EditBookmarkDialog({
               >
                 <Star className={cn("h-5 w-5", starred && "fill-current")} />
               </Button>
-
-              {/* Open Source Icon Button */}
               <Button
                 type="button"
                 variant={openSource ? "default" : "outline"}

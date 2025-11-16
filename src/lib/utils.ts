@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { pb } from "./pocketbase";
 import { toast } from "sonner";
-import {  type UsersResponse } from "./pocketbase-types";
+import { type UsersResponse } from "./pocketbase-types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -15,6 +15,12 @@ export function handleError(error: Error) {
   console.error(error)
   toast.error("An error occurred", {
     description: error.message,
+    richColors: true
+  })
+}
+
+export function handleSuccess(message: string) {
+  toast.success(message, {
     richColors: true
   })
 }

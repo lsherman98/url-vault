@@ -1,9 +1,9 @@
-import * as React from "react";
 import { X, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 export interface Tag {
   id: string;
@@ -25,12 +25,11 @@ export function TagsInput({
   className,
   availableTags = [],
 }: TagsInputProps) {
-  const [inputValue, setInputValue] = React.useState("");
-  const [open, setOpen] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [inputValue, setInputValue] = useState("");
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Filter available tags based on input and exclude already selected tags
-  const filteredTags = React.useMemo(() => {
+  const filteredTags = useMemo(() => {
     const selectedTagTexts = new Set(tags.map((tag) => tag.text.toLowerCase()));
     return availableTags.filter(
       (tag) =>
@@ -38,18 +37,16 @@ export function TagsInput({
     );
   }, [availableTags, tags, inputValue]);
 
-  // Check if we should show "Create" option
   const showCreate =
     inputValue.trim() &&
     !availableTags.some((tag) => tag.text.toLowerCase() === inputValue.trim().toLowerCase()) &&
     !tags.some((tag) => tag.text.toLowerCase() === inputValue.trim().toLowerCase());
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addTag();
     } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
-      // Remove last tag if input is empty
       removeTag(tags[tags.length - 1].id);
     } else if (e.key === "Escape") {
       setOpen(false);
@@ -88,7 +85,6 @@ export function TagsInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    // Open popover if there's input
     if (value.trim()) {
       setOpen(true);
     } else {
