@@ -69,7 +69,7 @@ const UserLoginForm = () => {
           }
 
           toast.success("Successfully signed in!");
-          navigate({ to: "/rules" });
+          navigate({ to: "/add" });
         } catch (error: any) {
           console.error(error);
           const message = "Failed to sign in. Please check your credentials.";
@@ -119,7 +119,7 @@ const UserCreateForm = () => {
           await pb.collection("users").authWithPassword(email, password);
 
           toast.success("Account created successfully!");
-          navigate({ to: "/rules" });
+          navigate({ to: "/add" });
         } catch (error: any) {
           console.error(error);
           let message = "Failed to create account. Please try again.";
@@ -274,7 +274,7 @@ function LoginForm() {
                     await updateProfileFromOAuth2(authData);
 
                     toast.success("Successfully signed in!");
-                    navigate({ to: "/rules" });
+                    navigate({ to: "/add" });
                   } catch (error: any) {
                     console.error(error);
                     const message = "Failed to sign in.";

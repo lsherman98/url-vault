@@ -101,10 +101,12 @@ export type BookmarksRecord = {
 	created: IsoAutoDateString
 	description?: string
 	id: string
+	open_source?: boolean
 	starred?: boolean
 	tags?: RecordIdString[]
 	updated: IsoAutoDateString
 	url?: string
+	user?: RecordIdString
 }
 
 export type CategoriesRecord = {
