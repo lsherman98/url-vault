@@ -13,11 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppSubscriptionIndexRouteImport } from './routes/_app/subscription/index'
-import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
-import { Route as AppRulesIndexRouteImport } from './routes/_app/rules/index'
-import { Route as AppLogsIndexRouteImport } from './routes/_app/logs/index'
-import { Route as AppForwardingIndexRouteImport } from './routes/_app/forwarding/index'
+import { Route as AppAddIndexRouteImport } from './routes/_app/add/index'
 
 const SigninLazyRouteImport = createFileRoute('/signin')()
 
@@ -35,90 +31,35 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppSubscriptionIndexRoute = AppSubscriptionIndexRouteImport.update({
-  id: '/subscription/',
-  path: '/subscription/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRulesIndexRoute = AppRulesIndexRouteImport.update({
-  id: '/rules/',
-  path: '/rules/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLogsIndexRoute = AppLogsIndexRouteImport.update({
-  id: '/logs/',
-  path: '/logs/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppForwardingIndexRoute = AppForwardingIndexRouteImport.update({
-  id: '/forwarding/',
-  path: '/forwarding/',
+const AppAddIndexRoute = AppAddIndexRouteImport.update({
+  id: '/add/',
+  path: '/add/',
   getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/signin': typeof SigninLazyRoute
-  '/forwarding': typeof AppForwardingIndexRoute
-  '/logs': typeof AppLogsIndexRoute
-  '/rules': typeof AppRulesIndexRoute
-  '/settings': typeof AppSettingsIndexRoute
-  '/subscription': typeof AppSubscriptionIndexRoute
+  '/add': typeof AppAddIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/signin': typeof SigninLazyRoute
-  '/forwarding': typeof AppForwardingIndexRoute
-  '/logs': typeof AppLogsIndexRoute
-  '/rules': typeof AppRulesIndexRoute
-  '/settings': typeof AppSettingsIndexRoute
-  '/subscription': typeof AppSubscriptionIndexRoute
+  '/add': typeof AppAddIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/signin': typeof SigninLazyRoute
-  '/_app/forwarding/': typeof AppForwardingIndexRoute
-  '/_app/logs/': typeof AppLogsIndexRoute
-  '/_app/rules/': typeof AppRulesIndexRoute
-  '/_app/settings/': typeof AppSettingsIndexRoute
-  '/_app/subscription/': typeof AppSubscriptionIndexRoute
+  '/_app/add/': typeof AppAddIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/signin'
-    | '/forwarding'
-    | '/logs'
-    | '/rules'
-    | '/settings'
-    | '/subscription'
+  fullPaths: '/' | '/signin' | '/add'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/signin'
-    | '/forwarding'
-    | '/logs'
-    | '/rules'
-    | '/settings'
-    | '/subscription'
-  id:
-    | '__root__'
-    | '/'
-    | '/_app'
-    | '/signin'
-    | '/_app/forwarding/'
-    | '/_app/logs/'
-    | '/_app/rules/'
-    | '/_app/settings/'
-    | '/_app/subscription/'
+  to: '/' | '/signin' | '/add'
+  id: '__root__' | '/' | '/_app' | '/signin' | '/_app/add/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,58 +91,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/subscription/': {
-      id: '/_app/subscription/'
-      path: '/subscription'
-      fullPath: '/subscription'
-      preLoaderRoute: typeof AppSubscriptionIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/settings/': {
-      id: '/_app/settings/'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/rules/': {
-      id: '/_app/rules/'
-      path: '/rules'
-      fullPath: '/rules'
-      preLoaderRoute: typeof AppRulesIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/logs/': {
-      id: '/_app/logs/'
-      path: '/logs'
-      fullPath: '/logs'
-      preLoaderRoute: typeof AppLogsIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/forwarding/': {
-      id: '/_app/forwarding/'
-      path: '/forwarding'
-      fullPath: '/forwarding'
-      preLoaderRoute: typeof AppForwardingIndexRouteImport
+    '/_app/add/': {
+      id: '/_app/add/'
+      path: '/add'
+      fullPath: '/add'
+      preLoaderRoute: typeof AppAddIndexRouteImport
       parentRoute: typeof AppRoute
     }
   }
 }
 
 interface AppRouteChildren {
-  AppForwardingIndexRoute: typeof AppForwardingIndexRoute
-  AppLogsIndexRoute: typeof AppLogsIndexRoute
-  AppRulesIndexRoute: typeof AppRulesIndexRoute
-  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
-  AppSubscriptionIndexRoute: typeof AppSubscriptionIndexRoute
+  AppAddIndexRoute: typeof AppAddIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppForwardingIndexRoute: AppForwardingIndexRoute,
-  AppLogsIndexRoute: AppLogsIndexRoute,
-  AppRulesIndexRoute: AppRulesIndexRoute,
-  AppSettingsIndexRoute: AppSettingsIndexRoute,
-  AppSubscriptionIndexRoute: AppSubscriptionIndexRoute,
+  AppAddIndexRoute: AppAddIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
