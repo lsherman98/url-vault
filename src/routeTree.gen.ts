@@ -13,6 +13,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
+import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups/index'
 import { Route as AppBookmarksIndexRouteImport } from './routes/_app/bookmarks/index'
 import { Route as AppAddIndexRouteImport } from './routes/_app/add/index'
 
@@ -32,6 +34,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGroupsIndexRoute = AppGroupsIndexRouteImport.update({
+  id: '/groups/',
+  path: '/groups/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBookmarksIndexRoute = AppBookmarksIndexRouteImport.update({
   id: '/bookmarks/',
   path: '/bookmarks/',
@@ -48,12 +60,16 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninLazyRoute
   '/add': typeof AppAddIndexRoute
   '/bookmarks': typeof AppBookmarksIndexRoute
+  '/groups': typeof AppGroupsIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/signin': typeof SigninLazyRoute
   '/add': typeof AppAddIndexRoute
   '/bookmarks': typeof AppBookmarksIndexRoute
+  '/groups': typeof AppGroupsIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +78,23 @@ export interface FileRoutesById {
   '/signin': typeof SigninLazyRoute
   '/_app/add/': typeof AppAddIndexRoute
   '/_app/bookmarks/': typeof AppBookmarksIndexRoute
+  '/_app/groups/': typeof AppGroupsIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/signin' | '/add' | '/bookmarks'
+  fullPaths: '/' | '/signin' | '/add' | '/bookmarks' | '/groups' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/signin' | '/add' | '/bookmarks'
-  id: '__root__' | '/' | '/_app' | '/signin' | '/_app/add/' | '/_app/bookmarks/'
+  to: '/' | '/signin' | '/add' | '/bookmarks' | '/groups' | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/signin'
+    | '/_app/add/'
+    | '/_app/bookmarks/'
+    | '/_app/groups/'
+    | '/_app/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -100,6 +126,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/groups/': {
+      id: '/_app/groups/'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof AppGroupsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/bookmarks/': {
       id: '/_app/bookmarks/'
       path: '/bookmarks'
@@ -120,11 +160,15 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAddIndexRoute: typeof AppAddIndexRoute
   AppBookmarksIndexRoute: typeof AppBookmarksIndexRoute
+  AppGroupsIndexRoute: typeof AppGroupsIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAddIndexRoute: AppAddIndexRoute,
   AppBookmarksIndexRoute: AppBookmarksIndexRoute,
+  AppGroupsIndexRoute: AppGroupsIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

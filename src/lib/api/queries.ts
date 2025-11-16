@@ -41,11 +41,12 @@ export function useGetTags() {
     });
 }
 
-export function useGetGroup(id: string) {
+export function useGetGroup(id?: string) {
     return useQuery({
         queryKey: ['group', id],
         queryFn: () => getGroup(id),
-        placeholderData: keepPreviousData
+        placeholderData: keepPreviousData,
+        enabled: !!id
     });
 }
 

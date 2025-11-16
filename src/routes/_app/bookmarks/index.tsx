@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Check, ChevronsUpDown, Edit, ExternalLink, Star, Trash2, Code2 } from "lucide-react";
+import { Check, ChevronsUpDown, Edit, ExternalLink, Star, Trash2, Code2, FolderPlus, Github } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TagsInput, type Tag } from "@/components/ui/tags-input";
-import { cn } from "@/lib/utils";
-import { useGetBookmarks, useGetCategories, useGetTags } from "@/lib/api/queries";
-import { useUpdateBookmark, useDeleteBookmark, useCreateTag } from "@/lib/api/mutations";
+import { cn, getUserRecord } from "@/lib/utils";
+import { useGetBookmarks, useGetCategories, useGetTags, useGetGroups } from "@/lib/api/queries";
+import {
+  useUpdateBookmark,
+  useDeleteBookmark,
+  useCreateTag,
+  useCreateGroup,
+  useUpdateGroup,
+} from "@/lib/api/mutations";
 import type { BookmarksResponse, CategoriesResponse, TagsResponse } from "@/lib/pocketbase-types";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_app/bookmarks/")({
   component: RouteComponent,
@@ -43,6 +50,10 @@ function RouteComponent() {
   const [tagOpen, setTagOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<BookmarksResponse | null>(null);
   const [deletingBookmark, setDeletingBookmark] = useState<BookmarksResponse | null>(null);
+  const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
+  const [addingToGroup, setAddingToGroup] = useState(false);
+  const [groupSearch, setGroupSearch] = useState("");
+  const [groupPopoverOpen, setGroupPopoverOpen] = useState(false);
 
   // Data fetching - pass filters to API
   const { data: bookmarksData = [] } = useGetBookmarks(
@@ -53,11 +64,14 @@ function RouteComponent() {
   );
   const { data: categories = [] } = useGetCategories();
   const { data: tags = [] } = useGetTags();
+  const { data: groups = [] } = useGetGroups();
 
   // Mutations
   const updateBookmark = useUpdateBookmark();
   const deleteBookmark = useDeleteBookmark();
   const createTag = useCreateTag();
+  const createGroup = useCreateGroup();
+  const updateGroup = useUpdateGroup();
 
   const handleToggleStar = async (bookmark: BookmarksResponse) => {
     try {
@@ -101,6 +115,73 @@ function RouteComponent() {
       .filter(Boolean) as string[];
   };
 
+  const handleToggleBookmarkSelection = (bookmarkId: string) => {
+    setSelectedBookmarks((prev) =>
+      prev.includes(bookmarkId) ? prev.filter((id) => id !== bookmarkId) : [...prev, bookmarkId]
+    );
+  };
+
+  const handleToggleAllBookmarks = () => {
+    if (selectedBookmarks.length === bookmarksData.length) {
+      setSelectedBookmarks([]);
+    } else {
+      setSelectedBookmarks(bookmarksData.map((b) => b.id));
+    }
+  };
+
+  const handleAddToGroup = async (groupId: string) => {
+    if (selectedBookmarks.length === 0) {
+      toast.error("No bookmarks selected");
+      return;
+    }
+
+    const group = groups.find((g) => g.id === groupId);
+    if (!group) return;
+
+    const currentBookmarks = group.bookmarks || [];
+    const newBookmarks = [...new Set([...currentBookmarks, ...selectedBookmarks])];
+
+    try {
+      await updateGroup.mutateAsync({
+        id: groupId,
+        data: { bookmarks: newBookmarks },
+      });
+      toast.success(`Added ${selectedBookmarks.length} bookmark(s) to ${group.title}`);
+      setSelectedBookmarks([]);
+      setGroupPopoverOpen(false);
+      setGroupSearch("");
+      setAddingToGroup(false);
+    } catch (error) {
+      toast.error("Failed to add bookmarks to group");
+      console.error(error);
+    }
+  };
+
+  const handleCreateGroupWithBookmarks = async (groupTitle: string) => {
+    if (selectedBookmarks.length === 0) {
+      toast.error("No bookmarks selected");
+      return;
+    }
+
+    try {
+      const user = getUserRecord();
+      await createGroup.mutateAsync({
+        title: groupTitle,
+        bookmarks: selectedBookmarks,
+        pinned: false,
+        user: user.id,
+      });
+      toast.success(`Created group "${groupTitle}" with ${selectedBookmarks.length} bookmark(s)`);
+      setSelectedBookmarks([]);
+      setGroupPopoverOpen(false);
+      setGroupSearch("");
+      setAddingToGroup(false);
+    } catch (error) {
+      toast.error("Failed to create group");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -111,22 +192,40 @@ function RouteComponent() {
       {/* Filters */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Filters</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedCategories([]);
-              setSelectedTags([]);
-              setFilterStarred(false);
-              setFilterOpenSource(false);
-            }}
-            disabled={
-              selectedCategories.length === 0 && selectedTags.length === 0 && !filterStarred && !filterOpenSource
-            }
-          >
-            Clear All Filters
-          </Button>
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold">Filters</h2>
+            {selectedBookmarks.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">{selectedBookmarks.length} selected</span>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedBookmarks([])}>
+                  Clear selection
+                </Button>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {selectedBookmarks.length > 0 && (
+              <Button onClick={() => setAddingToGroup(true)} size="sm">
+                <FolderPlus className="mr-2 h-4 w-4" />
+                Add to Group
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedCategories([]);
+                setSelectedTags([]);
+                setFilterStarred(false);
+                setFilterOpenSource(false);
+              }}
+              disabled={
+                selectedCategories.length === 0 && selectedTags.length === 0 && !filterStarred && !filterOpenSource
+              }
+            >
+              Clear All Filters
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-4 p-4 border rounded-lg bg-card">
@@ -223,18 +322,6 @@ function RouteComponent() {
                 </Command>
               </PopoverContent>
             </Popover>
-            {selectedTags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {selectedTags.map((tagId) => {
-                  const tag = tags.find((t) => t.id === tagId);
-                  return (
-                    <Badge key={tagId} variant="secondary" className="text-xs">
-                      {tag?.tag}
-                    </Badge>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           {/* Toggles Section */}
@@ -269,6 +356,12 @@ function RouteComponent() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={bookmarksData.length > 0 && selectedBookmarks.length === bookmarksData.length}
+                  onCheckedChange={handleToggleAllBookmarks}
+                />
+              </TableHead>
               <TableHead className="w-[50px]"></TableHead>
               <TableHead>URL</TableHead>
               <TableHead>Category</TableHead>
@@ -280,13 +373,19 @@ function RouteComponent() {
           <TableBody>
             {bookmarksData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   No bookmarks found
                 </TableCell>
               </TableRow>
             ) : (
               bookmarksData.map((bookmark) => (
                 <TableRow key={bookmark.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedBookmarks.includes(bookmark.id)}
+                      onCheckedChange={() => handleToggleBookmarkSelection(bookmark.id)}
+                    />
+                  </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="icon" onClick={() => handleToggleStar(bookmark)} className="h-8 w-8">
                       <Star
@@ -410,6 +509,65 @@ function RouteComponent() {
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add to Group Dialog */}
+      <Dialog open={addingToGroup} onOpenChange={setAddingToGroup}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add to Group</DialogTitle>
+            <DialogDescription>
+              Add {selectedBookmarks.length} bookmark(s) to an existing group or create a new one
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label>Select or Create Group</Label>
+            <Popover open={groupPopoverOpen} onOpenChange={setGroupPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-between mt-2">
+                  Select group...
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0" style={{ width: "var(--radix-popover-trigger-width)" }}>
+                <Command shouldFilter={false}>
+                  <CommandInput
+                    placeholder="Search or create group..."
+                    value={groupSearch}
+                    onValueChange={setGroupSearch}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No group found.</CommandEmpty>
+                    {groupSearch && !groups.find((g) => g.title?.toLowerCase() === groupSearch.toLowerCase()) && (
+                      <CommandGroup>
+                        <CommandItem onSelect={() => handleCreateGroupWithBookmarks(groupSearch)}>
+                          Create "{groupSearch}"
+                        </CommandItem>
+                      </CommandGroup>
+                    )}
+                    {groups.length > 0 && (
+                      <CommandGroup>
+                        {groups.map((group) => (
+                          <CommandItem key={group.id} value={group.title} onSelect={() => handleAddToGroup(group.id)}>
+                            {group.title}
+                            <span className="ml-auto text-xs text-muted-foreground">
+                              {group.bookmarks?.length || 0} bookmarks
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddingToGroup(false)}>
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -557,14 +715,32 @@ function EditBookmarkDialog({
             <TagsInput tags={selectedTags} onTagsChange={setSelectedTags} />
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="flex items-center space-x-2">
-              <Switch id="edit-starred" checked={starred} onCheckedChange={setStarred} />
-              <Label htmlFor="edit-starred">Starred</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch id="edit-opensource" checked={openSource} onCheckedChange={setOpenSource} />
-              <Label htmlFor="edit-opensource">Open Source</Label>
+          <div className="space-y-2">
+            <Label>Options</Label>
+            <div className="flex items-center gap-3">
+              {/* Starred Icon Button */}
+              <Button
+                type="button"
+                variant={starred ? "default" : "outline"}
+                size="icon"
+                onClick={() => setStarred(!starred)}
+                className="h-10 w-10 shadow-sm"
+                title={starred ? "Remove star" : "Star bookmark"}
+              >
+                <Star className={cn("h-5 w-5", starred && "fill-current")} />
+              </Button>
+
+              {/* Open Source Icon Button */}
+              <Button
+                type="button"
+                variant={openSource ? "default" : "outline"}
+                size="icon"
+                onClick={() => setOpenSource(!openSource)}
+                className="h-10 w-10 shadow-sm"
+                title={openSource ? "Open source" : "Mark as open source"}
+              >
+                <Github className={cn("h-5 w-5", openSource && "fill-current")} />
+              </Button>
             </div>
           </div>
         </div>

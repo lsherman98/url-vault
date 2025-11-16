@@ -14,8 +14,14 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TagsInput, type Tag } from "@/components/ui/tags-input";
 import { cn, getUserRecord } from "@/lib/utils";
-import { useGetCategories, useGetTags } from "@/lib/api/queries";
-import { useCreateBookmark, useCreateCategory, useCreateTag, useGenerateDescription } from "@/lib/api/mutations";
+import { useGetCategories, useGetTags, useGetGroups } from "@/lib/api/queries";
+import {
+  useCreateBookmark,
+  useCreateCategory,
+  useCreateTag,
+  useGenerateDescription,
+  useUpdateGroup,
+} from "@/lib/api/mutations";
 
 const bookmarkSchema = z.object({
   url: z.string().url({ message: "Please enter a valid URL" }),
@@ -28,6 +34,7 @@ const bookmarkSchema = z.object({
     )
     .optional(),
   category: z.string().optional(),
+  groups: z.array(z.string()).optional(),
   starred: z.boolean(),
   open_source: z.boolean(),
   description: z.string().optional(),
@@ -43,13 +50,16 @@ function RouteComponent() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
+  const [groupsOpen, setGroupsOpen] = useState(false);
 
   const { data: categories = [], isLoading: categoriesLoading } = useGetCategories();
   const { data: existingTags = [] } = useGetTags();
+  const { data: groups = [] } = useGetGroups();
   const createBookmark = useCreateBookmark();
   const createCategory = useCreateCategory();
   const createTag = useCreateTag();
   const generateDescriptionMutation = useGenerateDescription();
+  const updateGroup = useUpdateGroup();
 
   const form = useForm<BookmarkFormValues>({
     resolver: zodResolver(bookmarkSchema),
@@ -57,6 +67,7 @@ function RouteComponent() {
       url: "",
       tags: [],
       category: "",
+      groups: [],
       starred: false,
       open_source: false,
       description: "",
@@ -141,7 +152,7 @@ function RouteComponent() {
       const tagIds = data.tags?.map((tag) => tag.id) || [];
 
       // Create bookmark
-      await createBookmark.mutateAsync({
+      const newBookmark = await createBookmark.mutateAsync({
         url: data.url,
         category: categoryId,
         tags: tagIds,
@@ -150,6 +161,22 @@ function RouteComponent() {
         description: data.description,
         user: user.id,
       });
+
+      // Add bookmark to selected groups
+      if (data.groups && data.groups.length > 0) {
+        for (const groupId of data.groups) {
+          const group = groups.find((g) => g.id === groupId);
+          if (group) {
+            const currentBookmarks = group.bookmarks || [];
+            await updateGroup.mutateAsync({
+              id: groupId,
+              data: {
+                bookmarks: [...currentBookmarks, newBookmark.id],
+              },
+            });
+          }
+        }
+      }
 
       toast.success("Bookmark created successfully!");
 
@@ -205,6 +232,54 @@ function RouteComponent() {
           <div className="flex flex-col items-center space-y-6">
             <h1 className="text-4xl font-bold tracking-tight">Add Bookmark</h1>
 
+            <div className="flex items-center gap-3">
+              {/* Starred Icon Button */}
+              <FormField
+                control={form.control}
+                name="starred"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Button
+                        type="button"
+                        variant={field.value ? "default" : "outline"}
+                        size="icon"
+                        onClick={() => field.onChange(!field.value)}
+                        className="h-10 w-10 shadow-sm"
+                        title={field.value ? "Remove star" : "Star bookmark"}
+                      >
+                        <Star className={cn("h-5 w-5", field.value && "fill-current")} />
+                      </Button>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Open Source Icon Button */}
+              <FormField
+                control={form.control}
+                name="open_source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Button
+                        type="button"
+                        variant={field.value ? "default" : "outline"}
+                        size="icon"
+                        onClick={() => field.onChange(!field.value)}
+                        className="h-10 w-10 shadow-sm"
+                        title={field.value ? "Open source" : "Mark as open source"}
+                      >
+                        <Github className={cn("h-5 w-5", field.value && "fill-current")} />
+                      </Button>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="url"
@@ -223,7 +298,7 @@ function RouteComponent() {
               )}
             />
 
-            {/* Inline Options: Category, Tags, Starred */}
+            {/* Inline Options: Category, Tags, Groups */}
             <div className="flex items-center gap-3 w-full flex-wrap">
               {/* Category */}
               <FormField
@@ -320,47 +395,63 @@ function RouteComponent() {
                 )}
               />
 
-              {/* Starred Icon Button */}
+              {/* Groups */}
               <FormField
                 control={form.control}
-                name="starred"
+                name="groups"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Button
-                        type="button"
-                        variant={field.value ? "default" : "outline"}
-                        size="icon"
-                        onClick={() => field.onChange(!field.value)}
-                        className="h-10 w-10 shadow-sm"
-                        title={field.value ? "Remove star" : "Star bookmark"}
-                      >
-                        <Star className={cn("h-5 w-5", field.value && "fill-current")} />
-                      </Button>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Open Source Icon Button */}
-              <FormField
-                control={form.control}
-                name="open_source"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Button
-                        type="button"
-                        variant={field.value ? "default" : "outline"}
-                        size="icon"
-                        onClick={() => field.onChange(!field.value)}
-                        className="h-10 w-10 shadow-sm"
-                        title={field.value ? "Open source" : "Mark as open source"}
-                      >
-                        <Github className={cn("h-5 w-5", field.value && "fill-current")} />
-                      </Button>
-                    </FormControl>
+                  <FormItem className="flex-1 min-w-[200px]">
+                    <Popover open={groupsOpen} onOpenChange={setGroupsOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={groupsOpen}
+                            className={cn(
+                              "w-full justify-between h-10 shadow-sm",
+                              (!field.value || field.value.length === 0) && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value && field.value.length > 0
+                              ? `${field.value.length} group(s) selected`
+                              : "Add to group..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0" style={{ width: "var(--radix-popover-trigger-width)" }}>
+                        <Command>
+                          <CommandInput placeholder="Search groups..." />
+                          <CommandList>
+                            <CommandEmpty>No groups found.</CommandEmpty>
+                            <CommandGroup>
+                              {groups.map((group) => (
+                                <CommandItem
+                                  key={group.id}
+                                  value={group.title}
+                                  onSelect={() => {
+                                    const currentGroups = field.value || [];
+                                    const newGroups = currentGroups.includes(group.id)
+                                      ? currentGroups.filter((id) => id !== group.id)
+                                      : [...currentGroups, group.id];
+                                    form.setValue("groups", newGroups);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value?.includes(group.id) ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {group.title}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}

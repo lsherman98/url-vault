@@ -1,5 +1,6 @@
 import { pb } from "../pocketbase";
 import { Collections, type Create, type Update } from "../pocketbase-types";
+import { getUserRecord } from "../utils";
 
 export async function createBookmark(data: Create<Collections.Bookmarks>) {
     return await pb.collection(Collections.Bookmarks).create(data);
@@ -95,8 +96,9 @@ export async function deleteGroup(id: string) {
     return await pb.collection(Collections.Groups).delete(id);
 }
 
-export async function getGroup(id: string) {
-    return await pb.collection(Collections.Groups).getOne(id);
+export async function getGroup(id?: string) {
+    if (!id) throw new Error("Group ID is required");
+    return await pb.collection(Collections.Groups).getOne(id, { expand: "bookmarks" });
 }
 
 export async function getGroups() {
@@ -109,4 +111,9 @@ export async function generateDescription(url: string) {
     return await pb.send("/api/generate-description", { method: "POST", body: { url } });
 }
 
+export async function deleteAccount() {
+    const user = getUserRecord();
+    if (!user.id) throw new Error("User not authenticated");
+    return await pb.collection(Collections.Users).delete(user.id);
+}
 
