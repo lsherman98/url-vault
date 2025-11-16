@@ -17,10 +17,33 @@ export async function getBookmark(id: string) {
     return await pb.collection(Collections.Bookmarks).getOne(id);
 }
 
-export async function getBookmarks(categories?: string[], tags?: string[], starred = false) {
+export async function getBookmarks(categories?: string[], tags?: string[], starred = false, openSource = false) {
+    let filter = "";
+
+    if (categories && categories.length > 0) {
+        filter += ` && (${categories.map((id) => `category.id ?= '${id}'`).join("||")})`;
+    }
+
+    if (tags && tags.length > 0) {
+        filter += ` && (${tags.map((id) => `tags.id ?= '${id}'`).join("||")})`;
+    }
+
+    if (starred) {
+        filter += ` && starred = true`;
+    }
+
+    if (openSource) {
+        filter += ` && open_source = true`;
+    }
+
+    if (filter.startsWith(" && ")) {
+        filter = filter.slice(4); // Remove leading ' && '
+    }
+
     return await pb.collection(Collections.Bookmarks).getFullList({
         batch: 1000,
-        filter: `category ?= ${categories} && tag ?= ${tags} && starred = ${starred}`
+        filter,
+        expand: "category,tags"
     });
 }
 
@@ -82,5 +105,8 @@ export async function getGroups() {
     });
 }
 
+export async function generateDescription(url: string) {
+    return await pb.send("/api/generate-description", { method: "POST", body: { url } });
+}
 
 

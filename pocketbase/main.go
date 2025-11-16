@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
+	"github.com/lsherman98/bookmarks/pocketbase/pb_hooks/api"
 
 	// _ "github.com/lsherman98/bookmarks/pocketbase/migrations"
 	"github.com/pocketbase/pocketbase"
@@ -19,6 +20,10 @@ func main() {
 
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
+	}
+
+	if err := api.Init(app); err != nil {
+		log.Fatal(err)
 	}
 
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {

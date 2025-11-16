@@ -17,10 +17,10 @@ export function useGetBookmark(id: string) {
     });
 }
 
-export function useGetBookmarks(categories?: string[], tags?: string[], starred = false) {
+export function useGetBookmarks(categories?: string[], tags?: string[], starred = false, openSource = false) {
     return useQuery({
-        queryKey: ['bookmarks', { categories, tags, starred }],
-        queryFn: () => getBookmarks(categories, tags, starred),
+        queryKey: ['bookmarks', { categories, tags, starred, openSource }],
+        queryFn: () => getBookmarks(categories, tags, starred, openSource),
         placeholderData: keepPreviousData
     });
 }

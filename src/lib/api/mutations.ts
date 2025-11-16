@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { handleError } from "../utils";
 import type { Collections, Create, Update } from "../pocketbase-types";
-import { createBookmark, createCategory, createGroup, createTag, deleteBookmark, deleteCategory, deleteGroup, deleteTag, updateBookmark, updateCategory, updateGroup, updateTag } from "./api";
+import { createBookmark, createCategory, createGroup, createTag, deleteBookmark, deleteCategory, deleteGroup, deleteTag, generateDescription, updateBookmark, updateCategory, updateGroup, updateTag } from "./api";
 
 export function useCreateBookmark() {
     const queryClient = useQueryClient();
@@ -148,5 +148,12 @@ export function useDeleteGroup() {
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ['groups'] });
         },
+    })
+}
+
+export function useGenerateDescription() {
+    return useMutation({
+        mutationFn: (url: string) => generateDescription(url),
+        onError: handleError,
     })
 }

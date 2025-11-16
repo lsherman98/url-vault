@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState } from "react";
-import { Star, Sparkles } from "lucide-react";
+import { Star, Sparkles, Github, ChevronsUpDown, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { TagsInput, type Tag } from "@/components/ui/tags-input";
 import { cn, getUserRecord } from "@/lib/utils";
 import { useGetCategories, useGetTags } from "@/lib/api/queries";
-import { useCreateBookmark, useCreateCategory, useCreateTag } from "@/lib/api/mutations";
+import { useCreateBookmark, useCreateCategory, useCreateTag, useGenerateDescription } from "@/lib/api/mutations";
 
 const bookmarkSchema = z.object({
   url: z.string().url({ message: "Please enter a valid URL" }),
@@ -29,6 +29,7 @@ const bookmarkSchema = z.object({
     .optional(),
   category: z.string().optional(),
   starred: z.boolean(),
+  open_source: z.boolean(),
   description: z.string().optional(),
 });
 
@@ -48,6 +49,7 @@ function RouteComponent() {
   const createBookmark = useCreateBookmark();
   const createCategory = useCreateCategory();
   const createTag = useCreateTag();
+  const generateDescriptionMutation = useGenerateDescription();
 
   const form = useForm<BookmarkFormValues>({
     resolver: zodResolver(bookmarkSchema),
@@ -56,47 +58,87 @@ function RouteComponent() {
       tags: [],
       category: "",
       starred: false,
+      open_source: false,
       description: "",
     },
   });
+
+  const handleTagsChange = async (newTags: Tag[]) => {
+    // Find newly added tags (those with temp IDs)
+    const addedTags = newTags.filter((tag) => tag.id.startsWith("temp-"));
+
+    if (addedTags.length > 0) {
+      const user = getUserRecord();
+      const updatedTags = [...newTags];
+
+      // Create each new tag and replace its temp ID with the real ID
+      for (const addedTag of addedTags) {
+        // Check if tag already exists
+        const existingTag = existingTags.find((t) => t.tag?.toLowerCase() === addedTag.text.toLowerCase());
+
+        if (existingTag) {
+          // Replace temp tag with existing tag
+          const index = updatedTags.findIndex((t) => t.id === addedTag.id);
+          updatedTags[index] = { id: existingTag.id, text: existingTag.tag || addedTag.text };
+        } else {
+          try {
+            const newTag = await createTag.mutateAsync({
+              tag: addedTag.text,
+              user: user.id,
+            });
+
+            // Replace temp ID with real ID
+            const index = updatedTags.findIndex((t) => t.id === addedTag.id);
+            updatedTags[index] = { id: newTag.id, text: addedTag.text };
+            toast.success(`Tag "${addedTag.text}" created`);
+          } catch (error) {
+            toast.error(`Failed to create tag "${addedTag.text}"`);
+            console.error(error);
+            // Remove the failed tag
+            const index = updatedTags.findIndex((t) => t.id === addedTag.id);
+            updatedTags.splice(index, 1);
+          }
+        }
+      }
+
+      setTags(updatedTags);
+      form.setValue("tags", updatedTags);
+    } else {
+      // Just a removal or no change
+      setTags(newTags);
+      form.setValue("tags", newTags);
+    }
+  };
+
+  const handleCreateCategory = async (categoryName: string) => {
+    try {
+      const user = getUserRecord();
+      const newCategory = await createCategory.mutateAsync({
+        category: categoryName,
+        custom: true,
+        user: user.id,
+      });
+
+      // Set the form value to the new category ID
+      form.setValue("category", newCategory.id);
+      setCategorySearch(categoryName);
+      setCategoryOpen(false);
+      toast.success(`Category "${categoryName}" created`);
+    } catch (error) {
+      toast.error("Failed to create category");
+      console.error(error);
+    }
+  };
 
   const onSubmit = async (data: BookmarkFormValues) => {
     try {
       const user = getUserRecord();
 
-      // Handle category - create if new
-      let categoryId = data.category;
-      const existingCategory = categories.find((c) => c.category?.toLowerCase() === categorySearch.toLowerCase());
+      // Category should already be an ID at this point (created immediately when selected)
+      const categoryId = data.category;
 
-      if (categorySearch && !existingCategory) {
-        // Creating a new category
-        const newCategory = await createCategory.mutateAsync({
-          category: categorySearch,
-          custom: true,
-          user: user.id,
-        });
-        categoryId = newCategory.id;
-      } else if (existingCategory) {
-        // Use existing category
-        categoryId = existingCategory.id;
-      }
-
-      // Handle tags - create new ones that don't exist
-      const tagIds: string[] = [];
-      if (data.tags && data.tags.length > 0) {
-        for (const tag of data.tags) {
-          const existingTag = existingTags.find((t) => t.tag?.toLowerCase() === tag.text.toLowerCase());
-          if (existingTag) {
-            tagIds.push(existingTag.id);
-          } else {
-            const newTag = await createTag.mutateAsync({
-              tag: tag.text,
-              user: user.id,
-            });
-            tagIds.push(newTag.id);
-          }
-        }
-      }
+      // Tags should already be IDs at this point (created immediately when added)
+      const tagIds = data.tags?.map((tag) => tag.id) || [];
 
       // Create bookmark
       await createBookmark.mutateAsync({
@@ -104,6 +146,7 @@ function RouteComponent() {
         category: categoryId,
         tags: tagIds,
         starred: data.starred,
+        open_source: data.open_source,
         description: data.description,
         user: user.id,
       });
@@ -129,9 +172,8 @@ function RouteComponent() {
 
     try {
       toast.info("Generating AI description...");
-      // TODO: Implement AI description generation
-      // For now, we'll show a placeholder
-      form.setValue("description", "AI-generated description will be implemented here.");
+      const result = await generateDescriptionMutation.mutateAsync(url);
+      form.setValue("description", result);
       toast.success("Description generated!");
     } catch (error) {
       toast.error("Failed to generate description");
@@ -139,9 +181,22 @@ function RouteComponent() {
     }
   };
 
-  const selectedCategory = categories.find((c) => c.id === form.watch("category"));
   const showCreateCategory =
     categorySearch && !categories.find((c) => c.category?.toLowerCase() === categorySearch.toLowerCase());
+
+  // Get display text for category button
+  const categoryDisplayText = () => {
+    const categoryValue = form.watch("category");
+    if (!categoryValue) return "Category";
+
+    // Check if it's an existing category (by ID)
+    const existing = categories.find((c) => c.id === categoryValue);
+    if (existing) return existing.category;
+
+    // Otherwise it's a new category name (the string itself)
+    return categoryValue;
+  };
+
   return (
     <div className="container mx-auto max-w-4xl min-h-[calc(100vh-6rem)] px-4 flex items-center justify-center">
       <Form {...form}>
@@ -188,7 +243,8 @@ function RouteComponent() {
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            {field.value ? selectedCategory?.category || "Category" : "Category"}
+                            {categoryDisplayText()}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -205,8 +261,7 @@ function RouteComponent() {
                               <CommandGroup>
                                 <CommandItem
                                   onSelect={() => {
-                                    form.setValue("category", categorySearch);
-                                    setCategoryOpen(false);
+                                    handleCreateCategory(categorySearch);
                                   }}
                                 >
                                   Create "{categorySearch}"
@@ -226,6 +281,12 @@ function RouteComponent() {
                                     }}
                                   >
                                     {category.category}
+                                    <Check
+                                      className={cn(
+                                        "ml-auto h-4 w-4",
+                                        field.value === category.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
@@ -248,12 +309,10 @@ function RouteComponent() {
                     <FormControl>
                       <TagsInput
                         tags={tags}
-                        onTagsChange={(newTags) => {
-                          setTags(newTags);
-                          form.setValue("tags", newTags);
-                        }}
+                        onTagsChange={handleTagsChange}
                         placeholder="Add tags..."
                         className="shadow-sm"
+                        availableTags={existingTags.map((t) => ({ id: t.id, text: t.tag || "" }))}
                       />
                     </FormControl>
                     <FormMessage />
@@ -277,6 +336,29 @@ function RouteComponent() {
                         title={field.value ? "Remove star" : "Star bookmark"}
                       >
                         <Star className={cn("h-5 w-5", field.value && "fill-current")} />
+                      </Button>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Open Source Icon Button */}
+              <FormField
+                control={form.control}
+                name="open_source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Button
+                        type="button"
+                        variant={field.value ? "default" : "outline"}
+                        size="icon"
+                        onClick={() => field.onChange(!field.value)}
+                        className="h-10 w-10 shadow-sm"
+                        title={field.value ? "Open source" : "Mark as open source"}
+                      >
+                        <Github className={cn("h-5 w-5", field.value && "fill-current")} />
                       </Button>
                     </FormControl>
                     <FormMessage />
@@ -308,7 +390,11 @@ function RouteComponent() {
                     </Button>
                   </div>
                   <FormControl>
-                    <Textarea {...field} placeholder="Add a description..." className="min-h-24 resize-y text-sm shadow-sm" />
+                    <Textarea
+                      {...field}
+                      placeholder="Add a description..."
+                      className="min-h-24 resize-y text-sm shadow-sm"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

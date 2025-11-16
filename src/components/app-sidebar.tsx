@@ -2,7 +2,7 @@ import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import { BookmarkPlus, Settings } from "lucide-react";
+import { BookmarkPlus, Bookmark, Settings } from "lucide-react";
 import { pb } from "@/lib/pocketbase";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -12,6 +12,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Add Bookmark",
         url: "/add",
         icon: BookmarkPlus,
+      },
+      {
+        title: "Bookmarks",
+        url: "/bookmarks",
+        icon: Bookmark,
       },
     ],
     navSecondary: [

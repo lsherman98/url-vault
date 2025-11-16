@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppBookmarksIndexRouteImport } from './routes/_app/bookmarks/index'
 import { Route as AppAddIndexRouteImport } from './routes/_app/add/index'
 
 const SigninLazyRouteImport = createFileRoute('/signin')()
@@ -31,6 +32,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppBookmarksIndexRoute = AppBookmarksIndexRouteImport.update({
+  id: '/bookmarks/',
+  path: '/bookmarks/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAddIndexRoute = AppAddIndexRouteImport.update({
   id: '/add/',
   path: '/add/',
@@ -41,11 +47,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/signin': typeof SigninLazyRoute
   '/add': typeof AppAddIndexRoute
+  '/bookmarks': typeof AppBookmarksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/signin': typeof SigninLazyRoute
   '/add': typeof AppAddIndexRoute
+  '/bookmarks': typeof AppBookmarksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/signin': typeof SigninLazyRoute
   '/_app/add/': typeof AppAddIndexRoute
+  '/_app/bookmarks/': typeof AppBookmarksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/signin' | '/add'
+  fullPaths: '/' | '/signin' | '/add' | '/bookmarks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/signin' | '/add'
-  id: '__root__' | '/' | '/_app' | '/signin' | '/_app/add/'
+  to: '/' | '/signin' | '/add' | '/bookmarks'
+  id: '__root__' | '/' | '/_app' | '/signin' | '/_app/add/' | '/_app/bookmarks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -91,6 +100,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/bookmarks/': {
+      id: '/_app/bookmarks/'
+      path: '/bookmarks'
+      fullPath: '/bookmarks'
+      preLoaderRoute: typeof AppBookmarksIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/add/': {
       id: '/_app/add/'
       path: '/add'
@@ -103,10 +119,12 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAddIndexRoute: typeof AppAddIndexRoute
+  AppBookmarksIndexRoute: typeof AppBookmarksIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAddIndexRoute: AppAddIndexRoute,
+  AppBookmarksIndexRoute: AppBookmarksIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
