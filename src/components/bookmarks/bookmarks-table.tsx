@@ -23,7 +23,7 @@ export function BookmarksTable({
   const allSelected = bookmarks.length > 0 && selectedBookmarks.length === bookmarks.length;
 
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-lg overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -31,17 +31,17 @@ export function BookmarksTable({
               <Checkbox checked={allSelected} onCheckedChange={onToggleAll} />
             </TableHead>
             <TableHead className="w-8"></TableHead>
-            <TableHead>URL</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-xs md:text-sm">URL</TableHead>
+            <TableHead className="text-xs md:text-sm hidden md:table-cell">Category</TableHead>
+            <TableHead className="text-xs md:text-sm hidden lg:table-cell">Tags</TableHead>
+            <TableHead className="text-xs md:text-sm hidden xl:table-cell">Description</TableHead>
+            <TableHead className="text-right text-xs md:text-sm">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {bookmarks.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={7} className="text-center text-muted-foreground py-8 text-xs md:text-sm">
                 No bookmarks found
               </TableCell>
             </TableRow>

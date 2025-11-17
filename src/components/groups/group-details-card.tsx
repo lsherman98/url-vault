@@ -22,9 +22,9 @@ export function GroupDetailsCard({ groupId, onClose, onEdit }: GroupDetailsCardP
   const bookmarkCount = bookmarks?.length || 0;
 
   return (
-    <div className="w-[400px] h-[calc(100vh-210px)] max-h-[calc(100vh-210px)]">
-      <Card className="h-full">
-        <CardHeader>
+    <div className="w-full md:w-[400px] h-[500px] md:h-[calc(100vh-210px)] max-h-[500px] md:max-h-[calc(100vh-210px)]">
+      <Card className="flex flex-col h-full">
+        <CardHeader className="shrink-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <CardTitle className="text-lg">{selectedGroup?.title}</CardTitle>
@@ -42,10 +42,10 @@ export function GroupDetailsCard({ groupId, onClose, onEdit }: GroupDetailsCardP
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-4 pt-0 h-full">
+        <CardContent className="p-4 pt-0 flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             {bookmarks && bookmarks.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-3 pr-4">
                 {bookmarks.map((bookmark: BookmarksResponse) => (
                   <div key={bookmark.id} className="border rounded-lg p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">

@@ -21,7 +21,7 @@ export default function Layout({ children }: PropsWithChildren) {
       <AppSidebar variant="inset" />
       <SidebarInset className="overflow-hidden">
         <AppHeader />
-        <div className="flex flex-1 p-4">{children}</div>
+        <div className="flex flex-1 p-2 md:p-4">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

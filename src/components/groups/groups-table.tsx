@@ -35,37 +35,60 @@ export function GroupsTable({ onSelectGroup, onEditGroup, onDeleteGroup }: Group
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Bookmarks</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-xs md:text-sm">Title</TableHead>
+            <TableHead className="text-xs md:text-sm">Bookmarks</TableHead>
+            <TableHead className="text-right text-xs md:text-sm">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {groups?.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground">
+              <TableCell colSpan={3} className="text-center text-muted-foreground text-xs md:text-sm">
                 No groups yet. Create one to get started!
               </TableCell>
             </TableRow>
           ) : (
             groups?.map((group) => (
               <TableRow key={group.id}>
-                <TableCell className="font-medium">{group.title}</TableCell>
+                <TableCell className="font-medium text-xs md:text-sm">{group.title}</TableCell>
                 <TableCell>
-                  <Button variant="link" className="p-0 h-auto" onClick={() => onSelectGroup(group.id)}>
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto text-xs md:text-sm"
+                    onClick={() => onSelectGroup(group.id)}
+                  >
                     {group.bookmarks?.length || 0} bookmarks
                   </Button>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleTogglePin(group)}>
-                      {group.pinned ? <Pin className="h-4 w-4 fill-current" /> : <Pin className="h-4 w-4" />}
+                  <div className="flex justify-end gap-1 md:gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 md:h-9 md:w-9"
+                      onClick={() => handleTogglePin(group)}
+                    >
+                      {group.pinned ? (
+                        <Pin className="h-3 w-3 md:h-4 md:w-4 fill-current" />
+                      ) : (
+                        <Pin className="h-3 w-3 md:h-4 md:w-4" />
+                      )}
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onEditGroup(group)}>
-                      <Edit className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 md:h-9 md:w-9"
+                      onClick={() => onEditGroup(group)}
+                    >
+                      <Edit className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDeleteGroup(group)}>
-                      <Trash2 className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 md:h-9 md:w-9"
+                      onClick={() => onDeleteGroup(group)}
+                    >
+                      <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                   </div>
                 </TableCell>

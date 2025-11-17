@@ -49,10 +49,10 @@ function RouteComponent() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Bookmarks</h1>
-        <div className="text-sm text-muted-foreground">{bookmarksData?.length} bookmarks</div>
+        <h1 className="text-xl md:text-3xl font-bold">Bookmarks</h1>
+        <div className="text-xs md:text-sm text-muted-foreground">{bookmarksData?.length} bookmarks</div>
       </div>
       <BookmarksFilters
         selectedCategories={selectedCategories}

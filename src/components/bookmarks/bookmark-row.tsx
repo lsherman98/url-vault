@@ -55,69 +55,74 @@ export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, o
         <Checkbox checked={isSelected} onCheckedChange={() => onToggleSelection(bookmark.id)} />
       </TableCell>
       <TableCell>
-        <Button variant="ghost" size="icon" onClick={handleToggleStar} className="h-8 w-8">
+        <Button variant="ghost" size="icon" onClick={handleToggleStar} className="h-7 w-7 md:h-8 md:w-8">
           <Star
-            className={cn("h-4 w-4", bookmark.starred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground")}
+            className={cn(
+              "h-3 w-3 md:h-4 md:w-4",
+              bookmark.starred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+            )}
           />
         </Button>
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <a
             href={bookmark.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline flex items-center gap-1 max-w-md truncate"
+            className="text-blue-600 hover:underline flex items-center gap-1 max-w-[150px] md:max-w-md truncate text-xs md:text-sm"
           >
             {bookmark.url}
-            <ExternalLink className="h-3 w-3 shrink-0" />
+            <ExternalLink className="h-2.5 w-2.5 md:h-3 md:w-3 shrink-0" />
           </a>
           {bookmark.open_source && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Code2 className="h-3 w-3" />
-              Open Source
+            <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+              <Code2 className="h-2.5 w-2.5 md:h-3 md:w-3" />
+              <span className="hidden sm:inline">Open Source</span>
             </Badge>
           )}
         </div>
       </TableCell>
-      <TableCell>
-        <Badge variant="outline">{getCategoryName(bookmark.category)}</Badge>
+      <TableCell className="hidden md:table-cell">
+        <Badge variant="outline" className="text-xs">
+          {getCategoryName(bookmark.category)}
+        </Badge>
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden lg:table-cell">
         <div className="flex flex-wrap gap-1">
           {getTagNames(bookmark.tags).map((tagName) => (
-            <Badge key={tagName} variant="secondary">
+            <Badge key={tagName} variant="secondary" className="text-xs">
               {tagName}
             </Badge>
           ))}
         </div>
       </TableCell>
-      <TableCell className="max-w-md">
+      <TableCell className="max-w-md hidden xl:table-cell">
         {bookmark.description ? (
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="text-sm text-muted-foreground truncate cursor-help">{bookmark.description}</p>
+              <p className="text-xs md:text-sm text-muted-foreground truncate cursor-help">{bookmark.description}</p>
             </TooltipTrigger>
             <TooltipContent className="max-w-sm">
               <p>{bookmark.description}</p>
             </TooltipContent>
           </Tooltip>
         ) : (
-          <p className="text-sm text-muted-foreground">—</p>
+          <p className="text-xs md:text-sm text-muted-foreground">—</p>
         )}
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="icon" onClick={() => onEdit(bookmark)} className="h-8 w-8">
-            <Edit className="h-4 w-4" />
+        <div className="flex justify-end gap-1 md:gap-2">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(bookmark)} className="h-7 w-7 md:h-8 md:w-8">
+            <Edit className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onDelete(bookmark)}
-            className="h-8 w-8 text-destructive hover:text-destructive"
+            className="h-7 w-7 md:h-8 md:w-8 text-destructive hover:text-destructive"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
         </div>
       </TableCell>
