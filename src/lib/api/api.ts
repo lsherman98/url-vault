@@ -112,7 +112,7 @@ export async function getGroups() {
 }
 
 export async function generateDescription(url: string) {
-    return await pb.send("/api/generate-description", { method: "POST", body: { url } });
+    return await pb.send<string>("/api/generate-description", { method: "POST", body: { url } });
 }
 
 export async function deleteAccount() {

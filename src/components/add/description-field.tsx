@@ -23,7 +23,7 @@ export function DescriptionField({ form }: DescriptionFieldProps) {
     try {
       toast.info("Generating AI description...");
       const result = await generateDescriptionMutation.mutateAsync(url);
-      form.setValue("description", result);
+      form.setValue("description", result.trim());
     } catch (error) {
       toast.error("Failed to generate description");
       console.error(error);
