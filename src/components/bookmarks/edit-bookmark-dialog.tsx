@@ -133,7 +133,7 @@ export function EditBookmarkDialog({ bookmark, onClose }: EditBookmarkDialogProp
                 <Command>
                   <CommandInput placeholder="Search category..." />
                   <CommandList>
-                    <CommandEmpty>No category found.</CommandEmpty>
+                    <CommandEmpty>No categories found.</CommandEmpty>
                     <CommandGroup>
                       {categories?.map((cat) => (
                         <CommandItem

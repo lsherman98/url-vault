@@ -91,7 +91,7 @@ export function BookmarksFilters({
               <Command>
                 <CommandInput placeholder="Search categories..." />
                 <CommandList>
-                  <CommandEmpty>No category found.</CommandEmpty>
+                  <CommandEmpty>No categories found.</CommandEmpty>
                   <CommandGroup>
                     {categories?.map((category) => (
                       <CommandItem
@@ -133,7 +133,7 @@ export function BookmarksFilters({
               <Command>
                 <CommandInput placeholder="Search tags..." />
                 <CommandList>
-                  <CommandEmpty>No tag found.</CommandEmpty>
+                  <CommandEmpty>No tags found.</CommandEmpty>
                   <CommandGroup>
                     {tags?.map((tag) => (
                       <CommandItem

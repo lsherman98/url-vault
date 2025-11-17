@@ -81,7 +81,7 @@ export function CategorySelect({ form }: CategorySelectProps) {
                   onValueChange={setCategorySearch}
                 />
                 <CommandList>
-                  <CommandEmpty>{"No category found."}</CommandEmpty>
+                  <CommandEmpty>{"No categories found."}</CommandEmpty>
                   {showCreateCategory && (
                     <CommandGroup>
                       <CommandItem
