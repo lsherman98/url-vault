@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Check, ChevronsUpDown, FolderPlus, ChevronDown } from "lucide-react";
+import { Check, ChevronsUpDown, FolderPlus, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -15,11 +16,13 @@ interface BookmarksFiltersProps {
   selectedTags: string[];
   filterStarred: boolean;
   filterOpenSource: boolean;
+  searchQuery: string;
   selectedBookmarksCount: number;
   onCategoriesChange: (categories: string[]) => void;
   onTagsChange: (tags: string[]) => void;
   onStarredChange: (starred: boolean) => void;
   onOpenSourceChange: (openSource: boolean) => void;
+  onSearchChange: (search: string) => void;
   onClearSelection: () => void;
   onAddToGroup: () => void;
 }
@@ -29,11 +32,13 @@ export function BookmarksFilters({
   selectedTags,
   filterStarred,
   filterOpenSource,
+  searchQuery,
   selectedBookmarksCount,
   onCategoriesChange,
   onTagsChange,
   onStarredChange,
   onOpenSourceChange,
+  onSearchChange,
   onClearSelection,
   onAddToGroup,
 }: BookmarksFiltersProps) {
@@ -45,15 +50,22 @@ export function BookmarksFilters({
   const { data: categories } = useGetCategories();
   const { data: tags } = useGetTags();
 
+  const isSearching = searchQuery.length > 0;
+
   const handleClearAll = () => {
     onCategoriesChange([]);
     onTagsChange([]);
     onStarredChange(false);
     onOpenSourceChange(false);
+    onSearchChange("");
   };
 
   const hasActiveFilters =
-    selectedCategories.length > 0 || selectedTags.length > 0 || filterStarred || filterOpenSource;
+    selectedCategories.length > 0 ||
+    selectedTags.length > 0 ||
+    filterStarred ||
+    filterOpenSource ||
+    searchQuery.length > 0;
 
   const filtersHeader = (
     <div className="flex items-center justify-between gap-2">
@@ -104,11 +116,28 @@ export function BookmarksFilters({
 
   const filtersContent = (
     <div className="flex flex-wrap gap-2 md:gap-4 p-2 md:p-4 border rounded-lg bg-card">
+      <div className="flex flex-col gap-1 md:gap-2 w-full md:w-auto">
+        <Label className="font-medium text-xs md:text-sm">Search</Label>
+        <div className="relative w-full md:w-[280px]">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search bookmarks..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-7 md:pl-8 h-8 md:h-10 text-xs md:text-sm"
+          />
+        </div>
+      </div>
       <div className="flex flex-col gap-1 md:gap-2">
         <Label className="font-medium text-xs md:text-sm">Categories</Label>
         <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="justify-between w-full md:w-[220px] h-8 md:h-10 text-xs md:text-sm">
+            <Button
+              variant="outline"
+              className="justify-between w-full md:w-[220px] h-8 md:h-10 text-xs md:text-sm"
+              disabled={isSearching}
+            >
               {selectedCategories.length > 0 ? `${selectedCategories.length} selected` : "Select"}
               <ChevronsUpDown className="ml-2 h-3 w-3 md:h-4 md:w-4 shrink-0 opacity-50" />
             </Button>
@@ -151,7 +180,7 @@ export function BookmarksFilters({
         <Label className="font-medium text-xs md:text-sm">Tags</Label>
         <Popover open={tagOpen} onOpenChange={setTagOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="justify-between h-8 md:h-10 text-xs md:text-sm">
+            <Button variant="outline" className="justify-between h-8 md:h-10 text-xs md:text-sm" disabled={isSearching}>
               {selectedTags.length > 0 ? `${selectedTags.length} selected` : "Select tags..."}
               <ChevronsUpDown className="ml-2 h-3 w-3 md:h-4 md:w-4 shrink-0 opacity-50" />
             </Button>
@@ -194,8 +223,16 @@ export function BookmarksFilters({
         <div className="flex flex-col gap-1 md:gap-2">
           <Label className="font-medium text-xs md:text-sm">Starred</Label>
           <div className="flex items-center h-8 md:h-10 space-x-2">
-            <Switch id="starred-filter" checked={filterStarred} onCheckedChange={onStarredChange} />
-            <Label htmlFor="starred-filter" className="text-xs md:text-sm text-muted-foreground cursor-pointer">
+            <Switch
+              id="starred-filter"
+              checked={filterStarred}
+              onCheckedChange={onStarredChange}
+              disabled={isSearching}
+            />
+            <Label
+              htmlFor="starred-filter"
+              className={cn("text-xs md:text-sm text-muted-foreground cursor-pointer", isSearching && "opacity-50")}
+            >
               {filterStarred ? "is starred" : "Show all"}
             </Label>
           </div>
@@ -203,8 +240,16 @@ export function BookmarksFilters({
         <div className="flex flex-col gap-1 md:gap-2">
           <Label className="font-medium text-xs md:text-sm">Open Source</Label>
           <div className="flex items-center h-8 md:h-10 space-x-2">
-            <Switch id="opensource-filter" checked={filterOpenSource} onCheckedChange={onOpenSourceChange} />
-            <Label htmlFor="opensource-filter" className="text-xs md:text-sm text-muted-foreground cursor-pointer">
+            <Switch
+              id="opensource-filter"
+              checked={filterOpenSource}
+              onCheckedChange={onOpenSourceChange}
+              disabled={isSearching}
+            />
+            <Label
+              htmlFor="opensource-filter"
+              className={cn("text-xs md:text-sm text-muted-foreground cursor-pointer", isSearching && "opacity-50")}
+            >
               {filterOpenSource ? "is open source" : "Show all"}
             </Label>
           </div>

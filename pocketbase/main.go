@@ -7,6 +7,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/lsherman98/url-vault/pocketbase/pb_hooks/api"
+	"github.com/lsherman98/url-vault/pocketbase/pb_hooks/fts"
 
 	_ "github.com/lsherman98/url-vault/pocketbase/migrations"
 	"github.com/pocketbase/pocketbase"
@@ -23,6 +24,10 @@ func main() {
 	}
 
 	if err := api.Init(app); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := fts.Init(app, "bookmarks"); err != nil {
 		log.Fatal(err)
 	}
 

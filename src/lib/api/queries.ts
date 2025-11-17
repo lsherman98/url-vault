@@ -7,7 +7,7 @@
 // }
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getBookmark, getBookmarks, getCategories, getGroup, getGroups, getTags } from "./api";
+import { getBookmark, getBookmarks, getCategories, getGroup, getGroups, getTags, searchBookmarks } from "./api";
 
 export function useGetBookmark(id: string) {
     return useQuery({
@@ -55,5 +55,13 @@ export function useGetGroups() {
         queryKey: ['groups'],
         queryFn: () => getGroups(),
         placeholderData: keepPreviousData
+    });
+}
+
+export function useSearchBooks(query: string) {
+    return useQuery({
+        queryKey: ['search', query],
+        queryFn: () => searchBookmarks(query),
+        enabled: !!query,
     });
 }

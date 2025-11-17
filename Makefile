@@ -1,5 +1,5 @@
 pb:
-	cd pocketbase && go run . serve
+	cd pocketbase && go run --tags \"fts5\" . serve
 
 build:
 	pnpm build

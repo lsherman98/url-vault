@@ -1,5 +1,5 @@
 import { pb } from "../pocketbase";
-import { Collections, type Create, type Update } from "../pocketbase-types";
+import { Collections, type BookmarksResponse, type Create, type Update } from "../pocketbase-types";
 import { getUserRecord } from "../utils";
 
 export async function createBookmark(data: Create<Collections.Bookmarks>) {
@@ -117,3 +117,6 @@ export async function deleteAccount() {
     return await pb.collection(Collections.Users).delete(user.id);
 }
 
+export const searchBookmarks = async (query: string) => {
+    return await pb.send<BookmarksResponse[]>(`/api/collections/bookmarks/records/full-text-search?search=${query}`, { method: "GET",  });
+};

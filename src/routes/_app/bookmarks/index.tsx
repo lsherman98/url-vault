@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useGetBookmarks } from "@/lib/api/queries";
+import { useGetBookmarks, useSearchBooks } from "@/lib/api/queries";
 import type { BookmarksResponse } from "@/lib/pocketbase-types";
 import { BookmarksFilters } from "@/components/bookmarks/bookmarks-filters";
 import { BookmarksTable } from "@/components/bookmarks/bookmarks-table";
@@ -17,6 +17,7 @@ function RouteComponent() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [filterStarred, setFilterStarred] = useState(false);
   const [filterOpenSource, setFilterOpenSource] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [editingBookmark, setEditingBookmark] = useState<BookmarksResponse | null>(null);
   const [deletingBookmark, setDeletingBookmark] = useState<BookmarksResponse | null>(null);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
@@ -29,6 +30,11 @@ function RouteComponent() {
     filterOpenSource || undefined
   );
 
+  const { data: searchResults } = useSearchBooks(searchQuery);
+
+  // Use search results when searching, otherwise use filtered bookmarks
+  const displayBookmarks = searchQuery ? searchResults : bookmarksData;
+
   const handleToggleBookmark = (bookmarkId: string) => {
     setSelectedBookmarks((prev) =>
       prev.includes(bookmarkId) ? prev.filter((id) => id !== bookmarkId) : [...prev, bookmarkId]
@@ -36,10 +42,10 @@ function RouteComponent() {
   };
 
   const handleToggleAll = () => {
-    if (selectedBookmarks.length === bookmarksData?.length) {
+    if (selectedBookmarks.length === displayBookmarks?.length) {
       setSelectedBookmarks([]);
     } else {
-      setSelectedBookmarks(bookmarksData?.map((b) => b.id) || []);
+      setSelectedBookmarks(displayBookmarks?.map((b) => b.id) || []);
     }
   };
 
@@ -52,23 +58,25 @@ function RouteComponent() {
     <div className="container mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl md:text-3xl font-bold">Bookmarks</h1>
-        <div className="text-xs md:text-sm text-muted-foreground">{bookmarksData?.length} bookmarks</div>
+        <div className="text-xs md:text-sm text-muted-foreground">{displayBookmarks?.length} bookmarks</div>
       </div>
       <BookmarksFilters
         selectedCategories={selectedCategories}
         selectedTags={selectedTags}
         filterStarred={filterStarred}
         filterOpenSource={filterOpenSource}
+        searchQuery={searchQuery}
         selectedBookmarksCount={selectedBookmarks.length}
         onCategoriesChange={setSelectedCategories}
         onTagsChange={setSelectedTags}
         onStarredChange={setFilterStarred}
         onOpenSourceChange={setFilterOpenSource}
+        onSearchChange={setSearchQuery}
         onClearSelection={() => setSelectedBookmarks([])}
         onAddToGroup={() => setAddingToGroup(true)}
       />
       <BookmarksTable
-        bookmarks={bookmarksData || []}
+        bookmarks={displayBookmarks || []}
         selectedBookmarks={selectedBookmarks}
         onToggleBookmark={handleToggleBookmark}
         onToggleAll={handleToggleAll}
