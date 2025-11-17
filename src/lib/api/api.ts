@@ -44,7 +44,8 @@ export async function getBookmarks(categories?: string[], tags?: string[], starr
     return await pb.collection(Collections.Bookmarks).getFullList({
         batch: 1000,
         filter,
-        expand: "category,tags"
+        expand: "category,tags",
+        sort: "url",
     });
 }
 
@@ -62,7 +63,8 @@ export async function deleteCategory(id: string) {
 
 export async function getCategories() {
     return await pb.collection(Collections.Categories).getFullList({
-        batch: 1000
+        batch: 1000,
+        sort: "-category"
     });
 }
 
@@ -80,7 +82,8 @@ export async function deleteTag(id: string) {
 
 export async function getTags() {
     return await pb.collection(Collections.Tags).getFullList({
-        batch: 1000
+        batch: 1000,
+        sort: "-tag"
     });
 }
 
@@ -103,7 +106,8 @@ export async function getGroup(id?: string) {
 
 export async function getGroups() {
     return await pb.collection(Collections.Groups).getFullList({
-        batch: 1000
+        batch: 1000,
+        sort: "title"
     });
 }
 
@@ -118,5 +122,5 @@ export async function deleteAccount() {
 }
 
 export const searchBookmarks = async (query: string) => {
-    return await pb.send<BookmarksResponse[]>(`/api/collections/bookmarks/records/full-text-search?search=${query}`, { method: "GET",  });
+    return await pb.send<BookmarksResponse[]>(`/api/collections/bookmarks/records/full-text-search?search=${query}`, { method: "GET", });
 };

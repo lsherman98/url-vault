@@ -71,8 +71,13 @@ function RouteComponent() {
       const categoryId = data.category;
       const tagIds = data.tags?.map((tag) => tag.id) || [];
 
+      // Strip protocol and trailing slashes from URL
+      const processedUrl = data.url
+        .replace(/^https?:\/\//, "") // Remove http:// or https://
+        .replace(/\/+$/, ""); // Remove trailing slashes
+
       const newBookmark = await createBookmark.mutateAsync({
-        url: data.url,
+        url: processedUrl,
         category: categoryId,
         tags: tagIds,
         starred: data.starred,

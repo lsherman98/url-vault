@@ -907,7 +907,9 @@ func init() {
 					}
 				],
 				"id": "pbc_486090712",
-				"indexes": [],
+				"indexes": [
+					"CREATE UNIQUE INDEX ` + "`" + `idx_6NvlZq2Pmb` + "`" + ` ON ` + "`" + `bookmarks` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `url` + "`" + `\n)"
+				],
 				"listRule": "",
 				"name": "bookmarks",
 				"system": false,
@@ -992,7 +994,7 @@ func init() {
 				],
 				"id": "pbc_3292755704",
 				"indexes": [
-					"CREATE UNIQUE INDEX ` + "`" + `idx_aomH579IFA` + "`" + ` ON ` + "`" + `categories` + "`" + ` (` + "`" + `category` + "`" + `)"
+					"CREATE UNIQUE INDEX ` + "`" + `idx_aomH579IFA` + "`" + ` ON ` + "`" + `categories` + "`" + ` (\n  ` + "`" + `category` + "`" + `,\n  ` + "`" + `user` + "`" + `\n)"
 				],
 				"listRule": "@request.auth.id = user.id || custom = false",
 				"name": "categories",
@@ -1069,7 +1071,7 @@ func init() {
 				],
 				"id": "pbc_1219621782",
 				"indexes": [
-					"CREATE UNIQUE INDEX ` + "`" + `idx_rJIY6Yl8re` + "`" + ` ON ` + "`" + `tags` + "`" + ` (` + "`" + `tag` + "`" + `)"
+					"CREATE UNIQUE INDEX ` + "`" + `idx_rJIY6Yl8re` + "`" + ` ON ` + "`" + `tags` + "`" + ` (\n  ` + "`" + `tag` + "`" + `,\n  ` + "`" + `user` + "`" + `\n)"
 				],
 				"listRule": "@request.auth.id = user.id",
 				"name": "tags",
@@ -1167,7 +1169,9 @@ func init() {
 					}
 				],
 				"id": "pbc_3346940990",
-				"indexes": [],
+				"indexes": [
+					"CREATE UNIQUE INDEX ` + "`" + `idx_B7vN8gBPtJ` + "`" + ` ON ` + "`" + `groups` + "`" + ` (\n  ` + "`" + `title` + "`" + `,\n  ` + "`" + `user` + "`" + `\n)"
+				],
 				"listRule": "",
 				"name": "groups",
 				"system": false,

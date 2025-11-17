@@ -75,11 +75,13 @@ export function EditBookmarkDialog({ bookmark, onClose }: EditBookmarkDialogProp
       }
     }
 
+    const processedUrl = url.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+
     try {
       await updateBookmark.mutateAsync({
         id: bookmark.id,
         data: {
-          url,
+          url: processedUrl,
           description,
           category: category || undefined,
           tags: tagIds,
