@@ -119,7 +119,7 @@ function RouteComponent() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full max-w-3xl">
           <BookmarkFormHeader form={form} />
           <UrlInput form={form} />
-          <div className="flex items-center gap-3 w-full flex-wrap">
+          <div className="flex items-start gap-3 w-full flex-wrap">
             <CategorySelect form={form} />
             <TagsField form={form} />
             <GroupsSelect form={form} />
