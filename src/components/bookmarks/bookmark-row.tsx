@@ -77,7 +77,7 @@ export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, o
             href={getFullUrl(bookmark.url)}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline flex items-center gap-1 max-w-[150px] md:max-w-md truncate text-xs md:text-sm"
+            className="text-blue-600 hover:underline flex items-center gap-1 max-w-[72px] md:max-w-xs truncate text-xs md:text-sm"
           >
             {bookmark.url}
             <ExternalLink className="h-2.5 w-2.5 md:h-3 md:w-3 shrink-0" />
