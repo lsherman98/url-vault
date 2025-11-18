@@ -49,6 +49,13 @@ export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, o
       .filter(Boolean) as string[];
   };
 
+  const getFullUrl = (url: string) => {
+    if (!/^https?:\/\//i.test(url)) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return (
     <TableRow>
       <TableCell>
@@ -67,7 +74,7 @@ export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, o
       <TableCell>
         <div className="flex items-center gap-1 md:gap-2">
           <a
-            href={bookmark.url}
+            href={getFullUrl(bookmark.url)}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:underline flex items-center gap-1 max-w-[150px] md:max-w-md truncate text-xs md:text-sm"
