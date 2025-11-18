@@ -158,7 +158,11 @@ export function EditBookmarkDialog({ bookmark, onClose }: EditBookmarkDialogProp
           </div>
           <div className="space-y-2">
             <Label>Tags</Label>
-            <TagsInput tags={selectedTags} onTagsChange={setSelectedTags} />
+            <TagsInput
+              tags={selectedTags}
+              onTagsChange={setSelectedTags}
+              availableTags={allTags?.map((t) => ({ id: t.id, text: t.tag }))}
+            />
           </div>
           <div className="space-y-2">
             <Label>Options</Label>

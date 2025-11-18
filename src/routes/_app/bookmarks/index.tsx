@@ -32,7 +32,6 @@ function RouteComponent() {
 
   const { data: searchResults } = useSearchBooks(searchQuery);
 
-  // Use search results when searching, otherwise use filtered bookmarks
   const displayBookmarks = searchQuery ? searchResults : bookmarksData;
 
   const handleToggleBookmark = (bookmarkId: string) => {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { TagsInput, type Tag } from "@/components/ui/tags-input";
@@ -13,6 +13,13 @@ interface TagsFieldProps {
 
 export function TagsField({ form }: TagsFieldProps) {
   const [tags, setTags] = useState<Tag[]>([]);
+
+  useEffect(() => {
+    const formTags = form.watch("tags");
+    if (!formTags || formTags.length === 0) {
+      setTags([]);
+    }
+  }, [form.watch("tags")]);
 
   const { data: existingTags } = useGetTags();
   const createTag = useCreateTag();

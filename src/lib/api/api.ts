@@ -83,7 +83,7 @@ export async function deleteTag(id: string) {
 export async function getTags() {
     return await pb.collection(Collections.Tags).getFullList({
         batch: 1000,
-        sort: "-tag"
+        sort: "tag"
     });
 }
 
