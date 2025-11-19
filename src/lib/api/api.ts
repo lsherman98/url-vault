@@ -64,7 +64,7 @@ export async function deleteCategory(id: string) {
 export async function getCategories() {
     return await pb.collection(Collections.Categories).getFullList({
         batch: 1000,
-        sort: "-category"
+        sort: "category"
     });
 }
 

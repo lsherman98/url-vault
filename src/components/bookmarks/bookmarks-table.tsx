@@ -47,7 +47,7 @@ export function BookmarksTable({
                 </TableCell>
               </TableRow>
             ) : (
-              [...bookmarks, ...bookmarks, ...bookmarks, ...bookmarks, ...bookmarks].map((bookmark) => (
+              bookmarks.map((bookmark) => (
                 <BookmarkRow
                   key={bookmark.id}
                   bookmark={bookmark}
