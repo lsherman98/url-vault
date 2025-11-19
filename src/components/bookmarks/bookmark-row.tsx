@@ -1,4 +1,4 @@
-import { Edit, ExternalLink, Star, Trash2, Code2 } from "lucide-react";
+import { Edit, ExternalLink, Star, Trash2, Github } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -84,8 +84,7 @@ export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, o
           </a>
           {bookmark.open_source && (
             <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-              <Code2 className="h-2.5 w-2.5 md:h-3 md:w-3" />
-              <span className="hidden sm:inline">Open Source</span>
+              <Github className="h-2.5 w-2.5 md:h-3 md:w-3" />
             </Badge>
           )}
         </div>
@@ -96,13 +95,26 @@ export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, o
         </Badge>
       </TableCell>
       <TableCell className="hidden lg:table-cell">
-        <div className="flex flex-wrap gap-1">
-          {getTagNames(bookmark.tags).map((tagName) => (
-            <Badge key={tagName} variant="secondary" className="text-xs">
-              {tagName}
-            </Badge>
-          ))}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex flex-wrap gap-1 max-h-[52px] overflow-hidden relative">
+              {getTagNames(bookmark.tags).map((tagName) => (
+                <Badge key={tagName} variant="secondary" className="text-xs">
+                  {tagName}
+                </Badge>
+              ))}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-sm">
+            <div className="flex flex-wrap gap-1">
+              {getTagNames(bookmark.tags).map((tagName) => (
+                <Badge key={tagName} variant="secondary" className="text-xs">
+                  {tagName}
+                </Badge>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
       </TableCell>
       <TableCell className="max-w-md hidden xl:table-cell">
         {bookmark.description ? (

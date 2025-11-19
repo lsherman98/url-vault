@@ -29,7 +29,7 @@ func Init(app *pocketbase.PocketBase) error {
 				return e.InternalServerError("Something went wrong", err)
 			}
 
-			prompt := "In 1-2 sentences, clearly describe the service or purpose of the website at the following URL: " + body.Url
+			prompt := "Summarize the main purpose of the website at " + body.Url + " in 1-2 sentences. Output ONLY the description. Do not include any introductory text or mention that you are an AI."
 
 			result, err := geminiClient.Models.GenerateContent(ctx, "gemini-2.5-flash", genai.Text(prompt), &genai.GenerateContentConfig{
 				Tools: []*genai.Tool{

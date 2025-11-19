@@ -74,7 +74,7 @@ export function CategorySelect({ form }: CategorySelectProps) {
               </FormControl>
             </PopoverTrigger>
             <PopoverContent className="p-0" style={{ width: "var(--radix-popover-trigger-width)" }}>
-              <Command shouldFilter={false}>
+              <Command>
                 <CommandInput
                   placeholder="Search or create..."
                   value={categorySearch}

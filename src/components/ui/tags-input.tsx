@@ -1,7 +1,6 @@
 import { X, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 
@@ -27,6 +26,7 @@ export function TagsInput({
 }: TagsInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [open, setOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredTags = useMemo(() => {
@@ -43,13 +43,47 @@ export function TagsInput({
     !tags.some((tag) => tag.text.toLowerCase() === inputValue.trim().toLowerCase());
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (open && filteredTags.length > 0) {
+        // Calculate effective index considering "Create" option
+        const hasCreateOption = showCreate;
+
+        if (hasCreateOption && selectedIndex === 0) {
+          addTag();
+        } else {
+          const tagIndex = hasCreateOption ? selectedIndex - 1 : selectedIndex;
+          if (tagIndex >= 0 && tagIndex < filteredTags.length) {
+            selectExistingTag(filteredTags[tagIndex]);
+          } else if (!hasCreateOption && filteredTags.length === 0) {
+            addTag();
+          }
+        }
+      } else {
+        addTag();
+      }
+    } else if (e.key === "," && !open) {
       e.preventDefault();
       addTag();
     } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
       removeTag(tags[tags.length - 1].id);
     } else if (e.key === "Escape") {
       setOpen(false);
+    } else if (e.key === " " && !open) {
+      e.preventDefault();
+      setOpen(true);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const totalItems = filteredTags.length + (showCreate ? 1 : 0);
+      if (totalItems > 0) {
+        setSelectedIndex((prev) => (prev + 1) % totalItems);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const totalItems = filteredTags.length + (showCreate ? 1 : 0);
+      if (totalItems > 0) {
+        setSelectedIndex((prev) => (prev - 1 + totalItems) % totalItems);
+      }
     }
   };
 
@@ -85,6 +119,7 @@ export function TagsInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
+    setSelectedIndex(0);
     if (value.trim()) {
       setOpen(true);
     } else {
@@ -137,33 +172,43 @@ export function TagsInput({
         align="start"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <Command shouldFilter={false}>
-          <CommandList>
-            {!showCreate && filteredTags.length === 0 && <CommandEmpty>No tags found.</CommandEmpty>}
-            {showCreate && (
-              <CommandGroup>
-                <CommandItem onSelect={() => addTag()} className="cursor-pointer">
-                  Create "{inputValue.trim()}"
-                </CommandItem>
-              </CommandGroup>
-            )}
-            {filteredTags.length > 0 && (
-              <CommandGroup heading="Existing Tags">
-                {filteredTags.map((tag) => (
-                  <CommandItem
+        <div className="max-h-[300px] overflow-y-auto overflow-x-hidden p-1">
+          {!showCreate && filteredTags.length === 0 && (
+            <div className="py-6 text-center text-sm text-muted-foreground">No tags found.</div>
+          )}
+          {showCreate && (
+            <div
+              onClick={() => addTag()}
+              className={cn(
+                "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                selectedIndex === 0 && "bg-accent text-accent-foreground"
+              )}
+            >
+              Create "{inputValue.trim()}"
+            </div>
+          )}
+          {filteredTags.length > 0 && (
+            <>
+              {showCreate && <div className="h-px bg-muted my-1" />}
+              {filteredTags.map((tag, index) => {
+                const effectiveIndex = showCreate ? index + 1 : index;
+                return (
+                  <div
                     key={tag.id}
-                    value={tag.text}
-                    onSelect={() => selectExistingTag(tag)}
-                    className="cursor-pointer"
+                    onClick={() => selectExistingTag(tag)}
+                    className={cn(
+                      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                      selectedIndex === effectiveIndex && "bg-accent text-accent-foreground"
+                    )}
                   >
                     {tag.text}
-                    <Check className="ml-auto h-4 w-4 opacity-0" />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
+                    {tags.some((t) => t.id === tag.id) && <Check className="ml-auto h-4 w-4" />}
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
