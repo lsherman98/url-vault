@@ -69,11 +69,12 @@ export function TagsInput({
       removeTag(tags[tags.length - 1].id);
     } else if (e.key === "Escape") {
       setOpen(false);
-    } else if (e.key === " " && !open) {
-      e.preventDefault();
-      setOpen(true);
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
+      if (!open) {
+        setOpen(true);
+        return;
+      }
       const totalItems = filteredTags.length + (showCreate ? 1 : 0);
       if (totalItems > 0) {
         setSelectedIndex((prev) => (prev + 1) % totalItems);
