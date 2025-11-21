@@ -1,4 +1,4 @@
-import { Edit, ExternalLink, Star, Trash2, Github } from "lucide-react";
+import { Edit, ExternalLink, Star, Trash2, Github, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +16,17 @@ interface BookmarkRowProps {
   onToggleSelection: (bookmarkId: string) => void;
   onEdit: (bookmark: BookmarksResponse) => void;
   onDelete: (bookmark: BookmarksResponse) => void;
+  onAddToGroup?: (bookmark: BookmarksResponse) => void;
 }
 
-export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, onDelete }: BookmarkRowProps) {
+export function BookmarkRow({
+  bookmark,
+  isSelected,
+  onToggleSelection,
+  onEdit,
+  onDelete,
+  onAddToGroup,
+}: BookmarkRowProps) {
   const { data: categories } = useGetCategories();
   const { data: tags } = useGetTags();
   const updateBookmark = useUpdateBookmark();
@@ -132,6 +140,17 @@ export function BookmarkRow({ bookmark, isSelected, onToggleSelection, onEdit, o
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-1 md:gap-2">
+          {onAddToGroup && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onAddToGroup(bookmark)}
+              className="h-7 w-7 md:h-8 md:w-8"
+              title="Add to group"
+            >
+              <FolderPlus className="h-3 w-3 md:h-4 md:w-4" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" onClick={() => onEdit(bookmark)} className="h-7 w-7 md:h-8 md:w-8">
             <Edit className="h-3 w-3 md:h-4 md:w-4" />
           </Button>

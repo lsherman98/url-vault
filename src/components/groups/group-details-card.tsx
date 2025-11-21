@@ -21,6 +21,13 @@ export function GroupDetailsCard({ groupId, onClose, onEdit }: GroupDetailsCardP
   const bookmarks = (selectedGroup as any)?.expand?.bookmarks as BookmarksResponse[] | undefined;
   const bookmarkCount = bookmarks?.length || 0;
 
+  const getFullUrl = (url: string) => {
+    if (!/^https?:\/\//i.test(url)) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return (
     <div className="w-full md:w-[400px] h-[500px] md:h-[calc(100vh-210px)] max-h-[500px] md:max-h-[calc(100vh-210px)]">
       <Card className="flex flex-col h-full">
@@ -50,7 +57,7 @@ export function GroupDetailsCard({ groupId, onClose, onEdit }: GroupDetailsCardP
                   <div key={bookmark.id} className="border rounded-lg p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <a
-                        href={bookmark.url}
+                        href={getFullUrl(bookmark.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-medium text-sm text-primary hover:underline break-all line-clamp-2"
@@ -58,7 +65,7 @@ export function GroupDetailsCard({ groupId, onClose, onEdit }: GroupDetailsCardP
                         {bookmark.url}
                       </a>
                       <Button variant="ghost" size="icon" className="shrink-0 h-6 w-6" asChild>
-                        <a href={bookmark.url} target="_blank" rel="noopener noreferrer">
+                        <a href={getFullUrl(bookmark.url)} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </Button>

@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useGetBookmarks } from "@/lib/api/queries";
+import { useGetBookmarks, useGetGroup, useSearchBooks } from "@/lib/api/queries";
 import { useUpdateGroup } from "@/lib/api/mutations";
 import type { GroupsResponse, BookmarksResponse } from "@/lib/pocketbase-types";
 
@@ -31,17 +31,28 @@ export function EditGroupDialog({ group, onOpenChange }: EditGroupDialogProps) {
   const [bookmarkIds, setBookmarkIds] = useState<string[]>([]);
   const [bookmarkSearch, setBookmarkSearch] = useState("");
   const [bookmarkPopoverOpen, setBookmarkPopoverOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<BookmarksResponse[]>([]);
 
-  const { data: allBookmarks } = useGetBookmarks();
+  const { data: allBookmarks } = useGetBookmarks(undefined, undefined, false, false);
+  const { data: searchBookmarksResults } = useSearchBooks(bookmarkSearch);
+  const { data: fullGroup } = useGetGroup(group?.id);
   const updateGroup = useUpdateGroup();
 
   useEffect(() => {
-    if (group) {
-      setTitle(group.title || "");
-      setPinned(group.pinned || false);
-      setBookmarkIds(group.bookmarks || []);
+    if (fullGroup) {
+      setTitle(fullGroup.title || "");
+      setPinned(fullGroup.pinned || false);
+      setBookmarkIds(fullGroup.bookmarks || []);
     }
-  }, [group]);
+  }, [fullGroup]);
+
+  useEffect(() => {
+    if (bookmarkSearch) {
+      setSearchResults(searchBookmarksResults?.filter((b) => !bookmarkIds.includes(b.id)) || []);
+    } else {
+      setSearchResults(allBookmarks?.filter((b) => !bookmarkIds.includes(b.id)) || []);
+    }
+  }, [bookmarkSearch]);
 
   const handleUpdate = async () => {
     if (!group) return;
@@ -86,10 +97,6 @@ export function EditGroupDialog({ group, onOpenChange }: EditGroupDialogProps) {
     return allBookmarks?.filter((b) => bookmarkIds.includes(b.id)) || [];
   };
 
-  const getAvailableBookmarks = (): BookmarksResponse[] => {
-    return allBookmarks?.filter((b) => !bookmarkIds.includes(b.id)) || [];
-  };
-
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
     if (!open) {
@@ -116,8 +123,14 @@ export function EditGroupDialog({ group, onOpenChange }: EditGroupDialogProps) {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter group title"
                 />
-                <Button type="button" variant="ghost" size="icon" onClick={() => setPinned(!pinned)}>
-                  {pinned ? <Pin className="h-4 w-4 fill-current" /> : <Pin className="h-4 w-4" />}
+                <Button
+                  type="button"
+                  variant={pinned ? "default" : "ghost"}
+                  size="icon"
+                  onClick={() => setPinned(!pinned)}
+                  title={pinned ? "Unpin group" : "Pin group"}
+                >
+                  <Pin className={`h-4 w-4 ${pinned ? "fill-current" : ""}`} />
                 </Button>
               </div>
             </div>
@@ -140,24 +153,16 @@ export function EditGroupDialog({ group, onOpenChange }: EditGroupDialogProps) {
                     <CommandList>
                       <CommandEmpty>No bookmarks found.</CommandEmpty>
                       <CommandGroup>
-                        {getAvailableBookmarks()
-                          .filter((b) =>
-                            bookmarkSearch
-                              ? b.url?.toLowerCase().includes(bookmarkSearch.toLowerCase()) ||
-                                b.description?.toLowerCase().includes(bookmarkSearch.toLowerCase())
-                              : true
-                          )
-                          .slice(0, 10)
-                          .map((bookmark) => (
-                            <CommandItem key={bookmark.id} onSelect={() => handleAddBookmark(bookmark.id)}>
-                              <div className="flex flex-col min-w-0 w-full">
-                                <span className="font-medium truncate">{bookmark.url}</span>
-                                {bookmark.description && (
-                                  <span className="text-xs text-muted-foreground truncate">{bookmark.description}</span>
-                                )}
-                              </div>
-                            </CommandItem>
-                          ))}
+                        {searchResults.map((bookmark) => (
+                          <CommandItem key={bookmark.id} onSelect={() => handleAddBookmark(bookmark.id)}>
+                            <div className="flex flex-col min-w-0 w-full">
+                              <span className="font-medium truncate">{bookmark.url}</span>
+                              {bookmark.description && (
+                                <span className="text-xs text-muted-foreground truncate">{bookmark.description}</span>
+                              )}
+                            </div>
+                          </CommandItem>
+                        ))}
                       </CommandGroup>
                     </CommandList>
                   </Command>

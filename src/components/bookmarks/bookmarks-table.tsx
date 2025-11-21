@@ -10,6 +10,7 @@ interface BookmarksTableProps {
   onToggleAll: () => void;
   onEdit: (bookmark: BookmarksResponse) => void;
   onDelete: (bookmark: BookmarksResponse) => void;
+  onAddToGroup?: (bookmark: BookmarksResponse) => void;
 }
 
 export function BookmarksTable({
@@ -19,6 +20,7 @@ export function BookmarksTable({
   onToggleAll,
   onEdit,
   onDelete,
+  onAddToGroup,
 }: BookmarksTableProps) {
   const allSelected = bookmarks.length > 0 && selectedBookmarks.length === bookmarks.length;
 
@@ -55,6 +57,7 @@ export function BookmarksTable({
                   onToggleSelection={onToggleBookmark}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onAddToGroup={onAddToGroup}
                 />
               ))
             )}

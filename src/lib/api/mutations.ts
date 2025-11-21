@@ -133,8 +133,9 @@ export function useUpdateGroup() {
         mutationFn: ({ id, data }: { id: string; data: Update<Collections.Groups> }) =>
             updateGroup(id, data),
         onError: handleError,
-        onSuccess: async () => {
+        onSuccess: async (data) => {
             await queryClient.invalidateQueries({ queryKey: ['groups'] });
+            await queryClient.invalidateQueries({ queryKey: ['group', data.id] });
         },
     })
 }

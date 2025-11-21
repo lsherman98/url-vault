@@ -53,6 +53,11 @@ function RouteComponent() {
     setAddingToGroup(false);
   };
 
+  const handleAddBookmarkToGroup = (bookmark: BookmarksResponse) => {
+    setSelectedBookmarks([bookmark.id]);
+    setAddingToGroup(true);
+  };
+
   return (
     <div className="container mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
       <div className="flex items-center justify-between">
@@ -81,6 +86,7 @@ function RouteComponent() {
         onToggleAll={handleToggleAll}
         onEdit={setEditingBookmark}
         onDelete={setDeletingBookmark}
+        onAddToGroup={handleAddBookmarkToGroup}
       />
       <EditBookmarkDialog bookmark={editingBookmark} onClose={() => setEditingBookmark(null)} />
       <DeleteBookmarkDialog bookmark={deletingBookmark} onClose={() => setDeletingBookmark(null)} />
